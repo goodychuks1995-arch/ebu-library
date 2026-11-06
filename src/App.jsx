@@ -6,27 +6,19 @@ const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
 
 function getArticleLevel(article = {}) {
-  const title = article.title || "";
-  const match = title.match(/^(JSS\s*1|JSS\s*2|JSS\s*3|SS\s*1|SS\s*2|SS\s*3)/i);
-  if (!match) return "General";
-  return match[1].replace(/\s+/g, " ").trim();
+  const [level] = (article.description || "").split(" - ");
+  const match = (level || "").trim().match(/^(JSS|SS)\s*([123])$/i);
+  return match ? `${match[1].toUpperCase()} ${match[2]}` : "General";
 }
 
 function getArticleSubject(article = {}) {
-  const title = article.title || "";
-  const parts = title
-    .split(" - ")
-    .map((part) => part.trim())
-    .filter(Boolean);
-
-  if (parts.length >= 3) {
-    return parts[1].replace(/_/g, " ").replace(/\s+/g, " ").trim();
-  }
-
-  return "General";
-}
-
-function getArticleWeek(article = {}) {
+  const parts = (article.description || "").split(" - ").map((p) => p.trim()).filter(Boolean);
+  if (parts.length < 2) return "General";
+  const subject = parts.slice(1).join(" - ").replace(/_/g, " ");
+  return subject.length <= 4
+    ? subject
+    : subject.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}function getArticleWeek(article = {}) {
   const title = article.title || "";
 
   const patterns = [
