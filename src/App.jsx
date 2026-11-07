@@ -65,23 +65,11 @@ async function api(path, options = {}) {
 }
 
 async function downloadFile(articleId) {
-  const response = await fetch(`${API_URL}/downloads/${articleId}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("article_token")}`,
-    },
-  });
-  if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || "Download failed");
-  }
-  const blobUrl = URL.createObjectURL(await response.blob());
-  const link = document.createElement("a");
-  link.href = blobUrl;
-  link.download = "article-download";
-  link.click();
-  URL.revokeObjectURL(blobUrl);
+  const data = await api(`/downloads/${articleId}`);
+  window.location.href = data.url;
 }
-
+  });
+  
 function App() {
   const [articles, setArticles] = useState([]);
   const [user, setUser] = useState(() =>
@@ -379,7 +367,7 @@ function App() {
           article={selected}
           onBack={() => setSelected(null)}
           onBuy={() => buy(selected)}
-          onDownload={() => downloadFile(selected.id)}
+          onDownload={() => downloadFile(selected.id).catch((error) => setNotice(error.message))}
           owned={owned(selected.id)}
         />
       )}
@@ -401,7 +389,7 @@ function App() {
         />
       )}
       <footer>
-        <span>© 2026 Ebutech</span>
+        <span>© 2026 Goodytech</span>
         <span>LEARN SLOWLY. REMEMBER MORE.</span>
         <span>Built for independent study.</span>
       </footer>
@@ -542,7 +530,7 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
         <button type="button" className="close" onClick={onClose}>
           ×
         </button>
-        <p className="eyebrow">EBUTECH LIBRARY</p>
+        <p className="eyebrow">GoodyTECH LIBRARY</p>
         <h2>{mode === "login" ? "Welcome back." : "Make an account."}</h2>
         {mode === "signup" && (
           <label>
