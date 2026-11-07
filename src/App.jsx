@@ -653,15 +653,47 @@ function FormattedBody({ text = "", title = "" }) {
     </div>
   );
 }
-    function News({ items, isAdmin, onChange, setNotice }) {
-  const [form, setForm] = useState({ title: "", body: "" });
+    function excerpt(body = "", title = "", max = 200) {
+  let text = body.replace(/\r/g, "").trim();
+  if (text.startsWith(`# ${title}`)) text = text.slice(title.length + 2);
+  text = text
+    .replace(/\*\*/g, "")
+    .replace(/#{1,3}\s/g, "")
+    .replace(/^[-*]\s+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
+}
+
+function News({ items, isAdmin, onChange, setNotice }) {
+  const [form, setForm] = useState({ title: "", body: "", image: null });
+  const [fileKey, setFileKey] = useState(0);
+  const [openId, setOpenId] = useState(null);
+  const story = items.find((item) => item.id === openId);
+
+  const formatDate = (item) =>
+    new Date(item.created_at).toLocaleDateString("en-NG", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+
+  function openStory(id) {
+    setOpenId(id);
+    window.scrollTo({ top: 0 });
+  }
 
   async function publish(event) {
     event.preventDefault();
     try {
-      const item = await api("/news", { method: "POST", body: JSON.stringify(form) });
+      const data = new FormData();
+      data.append("title", form.title);
+      data.append("body", form.body);
+      if (form.image) data.append("image", form.image);
+      const item = await api("/news", { method: "POST", body: data });
       onChange([item, ...items]);
-      setForm({ title: "", body: "" });
+      setForm({ title: "", body: "", image: null });
+      setFileKey((key) => key + 1);
     } catch (error) {
       setNotice(error.message);
     }
@@ -672,9 +704,31 @@ function FormattedBody({ text = "", title = "" }) {
     try {
       await api(`/news/${id}`, { method: "DELETE" });
       onChange(items.filter((item) => item.id !== id));
+      setOpenId(null);
     } catch (error) {
       setNotice(error.message);
     }
+  }
+
+  if (story) {
+    return (
+      <main className="news">
+        <button className="back" onClick={() => setOpenId(null)}>
+          ← Back to news
+        </button>
+        <article className="news-item story">
+          <small>{formatDate(story)}</small>
+          <h1 className="story-title">{story.title}</h1>
+          {story.image_url && <img className="news-image" src={story.image_url} alt="" />}
+          <FormattedBody text={story.body} title={story.title} />
+          {isAdmin && (
+            <button className="text-button" onClick={() => remove(story.id)}>
+              Delete
+            </button>
+          )}
+        </article>
+      </main>
+    );
   }
 
   return (
@@ -698,26 +752,29 @@ function FormattedBody({ text = "", title = "" }) {
             value={form.body}
             onChange={(event) => setForm({ ...form, body: event.target.value })}
           />
+          <input
+            key={fileKey}
+            type="file"
+            accept="image/*"
+            onChange={(event) => setForm({ ...form, image: event.target.files[0] || null })}
+          />
           <button className="button button-dark">Publish ↗</button>
         </form>
       )}
       {items.length ? (
         items.map((item) => (
           <article className="news-item" key={item.id}>
-            <small>
-              {new Date(item.created_at).toLocaleDateString("en-NG", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </small>
-            <h3>{item.title}</h3>
-                       <FormattedBody text={item.body} title={item.title} />
-            {isAdmin && (
-              <button className="text-button" onClick={() => remove(item.id)}>
-                Delete
+            <small>{formatDate(item)}</small>
+            <h3>
+              <button className="news-headline" onClick={() => openStory(item.id)}>
+                {item.title}
               </button>
-            )}
+            </h3>
+            {item.image_url && <img className="news-image" src={item.image_url} alt="" />}
+            <p className="news-excerpt">{excerpt(item.body, item.title)}</p>
+            <button className="text-button" onClick={() => openStory(item.id)}>
+              Read full story →
+            </button>
           </article>
         ))
       ) : (
@@ -725,7 +782,7 @@ function FormattedBody({ text = "", title = "" }) {
       )}
     </main>
   );
-}  
+} 
 function Callback({ onDone, onError }) {
   useEffect(() => {
     const reference = new URLSearchParams(window.location.search).get(
