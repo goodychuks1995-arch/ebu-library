@@ -68,7 +68,7 @@ async function downloadFile(articleId) {
   const data = await api(`/downloads/${articleId}`);
   window.location.href = data.url;
 }
-  });
+
   
 function App() {
   const [articles, setArticles] = useState([]);
