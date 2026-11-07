@@ -203,9 +203,9 @@ function App() {
         <button className="brand" onClick={goCatalog}>
           <span className="brand-mark">E</span>
           <span>
-            Ebutech
+            BINARY THINKER
             <br />
-            <small>STUDY LIBRARY</small>
+            <small>ACADEMY</small>
           </span>
         </button>
                <nav>
@@ -403,9 +403,9 @@ function App() {
         />
       )}
       <footer>
-        <span>© 2026 Goodytech</span>
+        <span>© 2026 BINARY THINKERS</span>
         <span>LEARN SLOWLY. REMEMBER MORE.</span>
-        <span>Built for independent study.</span>
+        <span>Think clearly. Learn deeply.</span>
       </footer>
       {showReturnToTop && (
         <button
