@@ -72,6 +72,7 @@ async function downloadFile(articleId) {
   
 function App() {
   const [articles, setArticles] = useState([]);
+  const [news, setNews] = useState([]);
   const [user, setUser] = useState(() =>
     JSON.parse(localStorage.getItem("article_user") || "null"),
   );
@@ -92,6 +93,10 @@ function App() {
     if (new URLSearchParams(window.location.search).has("reference"))
       setView("callback");
   }, [user]);
+  useEffect(() => {
+  if (view === "news")
+    api("/news").then(setNews).catch((error) => setNotice(error.message));
+}, [view]);
   useEffect(() => {
     if (user)
       api("/purchases")
@@ -203,12 +208,18 @@ function App() {
             <small>STUDY LIBRARY</small>
           </span>
         </button>
-        <nav>
+               <nav>
           <button
             className={view === "catalog" ? "active" : ""}
             onClick={goCatalog}
           >
             Explore
+          </button>
+          <button
+            className={view === "news" ? "active" : ""}
+            onClick={() => { setSelected(null); setView("news"); }}
+          >
+            News
           </button>
           {user && (
             <button
@@ -379,6 +390,9 @@ function App() {
           }
         />
       )}
+      {view === "news" && (
+  <News items={news} isAdmin={user?.role === "admin"} onChange={setNews} setNotice={setNotice} />
+)}
       {view === "callback" && (
         <Callback
           onDone={() => {
@@ -578,6 +592,79 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
     </div>
   );
 }
+    function News({ items, isAdmin, onChange, setNotice }) {
+  const [form, setForm] = useState({ title: "", body: "" });
+
+  async function publish(event) {
+    event.preventDefault();
+    try {
+      const item = await api("/news", { method: "POST", body: JSON.stringify(form) });
+      onChange([item, ...items]);
+      setForm({ title: "", body: "" });
+    } catch (error) {
+      setNotice(error.message);
+    }
+  }
+
+  async function remove(id) {
+    if (!window.confirm("Delete this post?")) return;
+    try {
+      await api(`/news/${id}`, { method: "DELETE" });
+      onChange(items.filter((item) => item.id !== id));
+    } catch (error) {
+      setNotice(error.message);
+    }
+  }
+
+  return (
+    <main className="news">
+      <p className="eyebrow">LATEST UPDATES</p>
+      <h1>
+        The <em>news.</em>
+      </h1>
+      {isAdmin && (
+        <form className="news-form" onSubmit={publish}>
+          <input
+            required
+            placeholder="Headline"
+            value={form.title}
+            onChange={(event) => setForm({ ...form, title: event.target.value })}
+          />
+          <textarea
+            required
+            rows={4}
+            placeholder="Write the update..."
+            value={form.body}
+            onChange={(event) => setForm({ ...form, body: event.target.value })}
+          />
+          <button className="button button-dark">Publish ↗</button>
+        </form>
+      )}
+      {items.length ? (
+        items.map((item) => (
+          <article className="news-item" key={item.id}>
+            <small>
+              {new Date(item.created_at).toLocaleDateString("en-NG", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </small>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+            {isAdmin && (
+              <button className="text-button" onClick={() => remove(item.id)}>
+                Delete
+              </button>
+            )}
+          </article>
+        ))
+      ) : (
+        <div className="empty">No news yet. Check back soon.</div>
+      )}
+    </main>
+  );
+}  
 function Callback({ onDone, onError }) {
   useEffect(() => {
     const reference = new URLSearchParams(window.location.search).get(
