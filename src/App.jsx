@@ -592,6 +592,67 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
     </div>
   );
 }
+function renderInline(text) {
+  return text.split(/(\*\*[^*]+\*\*|https?:\/\/[^\s)]+)/g).map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (/^https?:\/\//.test(part))
+      return (
+        <a key={i} href={part} target="_blank" rel="noopener noreferrer">
+          {part}
+        </a>
+      );
+    return part;
+  });
+}
+
+function FormattedBody({ text = "", title = "" }) {
+  let content = text.replace(/\r/g, "").trim();
+  const lead = `# ${title}`;
+  if (content.startsWith(lead)) content = content.slice(lead.length).trim();
+
+  const lines = content
+    .replace(/\s(#{1,3})\s/g, "\n$1 ")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  const blocks = [];
+  let list = null;
+  lines.forEach((line) => {
+    const bullet = line.match(/^[-*]\s+(.*)/);
+    const numbered = line.match(/^\d+\.\s+(.*)/);
+    if (bullet || numbered) {
+      const type = bullet ? "ul" : "ol";
+      if (!list || list.type !== type) {
+        list = { type, items: [] };
+        blocks.push(list);
+      }
+      list.items.push((bullet || numbered)[1]);
+      return;
+    }
+    list = null;
+    const heading = line.match(/^(#{1,3})\s+(.*)/);
+    blocks.push(heading ? { type: "h", text: heading[2] } : { type: "p", text: line });
+  });
+
+  return (
+    <div className="body">
+      {blocks.map((block, i) => {
+        if (block.type === "h") return <h4 key={i}>{block.text}</h4>;
+        if (block.type === "p") return <p key={i}>{renderInline(block.text)}</p>;
+        const Tag = block.type;
+        return (
+          <Tag key={i}>
+            {block.items.map((item, j) => (
+              <li key={j}>{renderInline(item)}</li>
+            ))}
+          </Tag>
+        );
+      })}
+    </div>
+  );
+}
     function News({ items, isAdmin, onChange, setNotice }) {
   const [form, setForm] = useState({ title: "", body: "" });
 
@@ -651,7 +712,7 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
               })}
             </small>
             <h3>{item.title}</h3>
-            <p>{item.body}</p>
+                       <FormattedBody text={item.body} title={item.title} />
             {isAdmin && (
               <button className="text-button" onClick={() => remove(item.id)}>
                 Delete
