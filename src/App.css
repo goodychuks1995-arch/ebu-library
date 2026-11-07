@@ -825,4 +825,9 @@ footer {
     right: 16px;
     top: 86px;
   }
+  .news { max-width: 44rem; margin: 0 auto; padding: 3rem 1.25rem; }
+.news-form { display: grid; gap: .75rem; margin: 1.5rem 0 2rem; }
+.news-form input, .news-form textarea { padding: .7rem; font: inherit; border: 1px solid currentColor; background: transparent; color: inherit; }
+.news-item { padding: 1.25rem 0; border-top: 1px solid rgba(128, 128, 128, .4); }
+.news-item p { white-space: pre-line; }
 }
