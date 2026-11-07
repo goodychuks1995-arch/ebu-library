@@ -825,9 +825,15 @@ footer {
     right: 16px;
     top: 86px;
   }
-  .news { max-width: 44rem; margin: 0 auto; padding: 3rem 1.25rem; }
+ .news { max-width: 44rem; margin: 0 auto; padding: 3rem 1.25rem; }
 .news-form { display: grid; gap: .75rem; margin: 1.5rem 0 2rem; }
 .news-form input, .news-form textarea { padding: .7rem; font: inherit; border: 1px solid currentColor; background: transparent; color: inherit; }
-.news-item { padding: 1.25rem 0; border-top: 1px solid rgba(128, 128, 128, .4); }
-.news-item p { white-space: pre-line; }
+.news-item { padding: 1.5rem 0; border-top: 1px solid rgba(128, 128, 128, .4); }
+.news-item h3 { font-size: 1.5rem; line-height: 1.25; margin: .25rem 0 .75rem; }
+.news-item .body { line-height: 1.7; }
+.news-item .body h4 { margin: 1.5rem 0 .4rem; font-size: 1.1rem; }
+.news-item .body p { margin: .6rem 0; white-space: normal; }
+.news-item .body ul, .news-item .body ol { margin: .6rem 0; padding-left: 1.3rem; }
+.news-item .body li { margin: .3rem 0; }
+.news-item .body a { color: inherit; text-decoration: underline; }
 }
