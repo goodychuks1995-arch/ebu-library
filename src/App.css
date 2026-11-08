@@ -713,8 +713,18 @@ footer {
     padding: 16px 20px;
     flex-wrap: wrap;
   }
-  .topbar nav {
-    display: none;
+    .topbar nav {
+    display: flex;
+    order: 3;
+    width: 100%;
+    gap: 22px;
+    margin-left: 0;
+    overflow-x: auto;
+    border-top: 1px solid var(--line);
+  }
+  .topbar nav button {
+    padding: 12px 0;
+    white-space: nowrap;
   }
   .top-actions {
     margin-left: auto;
