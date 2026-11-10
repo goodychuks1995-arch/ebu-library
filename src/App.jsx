@@ -203,7 +203,7 @@ function App() {
         <button className="brand" onClick={goCatalog}>
           <span className="brand-mark">E</span>
           <span>
-            BINARY THINKER
+            BINARY THINKER'S
             <br />
             <small>ACADEMY</small>
           </span>
