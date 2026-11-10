@@ -544,7 +544,7 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
         <button type="button" className="close" onClick={onClose}>
           ×
         </button>
-        <p className="eyebrow">GoodyTECH LIBRARY</p>
+        <p className="eyebrow">BINARY THINKERS</p>
         <h2>{mode === "login" ? "Welcome back." : "Make an account."}</h2>
         {mode === "signup" && (
           <label>
