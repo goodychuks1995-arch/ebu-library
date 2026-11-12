@@ -148,11 +148,11 @@ h1 em {
   line-height: 1.7;
   margin-bottom: 31px;
 }
-.hero-art {
-  height: 390px;
-  position: relative;
-  background: var(--blue);
-  overflow: hidden;
+.hero-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .sun {
   position: absolute;
