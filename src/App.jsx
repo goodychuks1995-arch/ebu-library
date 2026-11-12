@@ -279,7 +279,7 @@ function App() {
               </button>
             </div>
                 <div className="hero-art">
-              <img src="/academy.jpg" alt="Binarythinker Academy" />
+              <img src="/Academy.jpg" alt="Binarythinker Academy" />
             </div>
               <div className="sun" />
               <div className="orbit orbit-one" />
