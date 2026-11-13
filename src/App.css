@@ -1400,3 +1400,169 @@ footer {
   .news-featured-img { height: 220px; min-height: 220px; }
   .news-featured-body { padding: 22px; }
 }
+/* ---------- Other pages ---------- */
+main.collection,
+main.library { max-width: 1240px; margin: 0 auto; }
+
+/* Shared page headings */
+.collection .section-heading h2,
+.library h1,
+.callback h1 {
+  font: 500 clamp(38px, 5vw, 64px) / 1.02 var(--serif);
+  letter-spacing: -0.03em;
+}
+
+/* Collection */
+.collection { padding-top: 70px; }
+.section-heading {
+  padding-bottom: 26px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--line);
+}
+.collection-tools > span {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(31, 79, 216, 0.1);
+  color: var(--royal);
+  font-weight: 500;
+}
+.search-input {
+  width: 230px;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+}
+.search-input:focus {
+  border-color: var(--royal);
+  box-shadow: 0 0 0 3px rgba(31, 79, 216, 0.15);
+}
+.level-group {
+  margin-bottom: 48px;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 20px 44px -34px rgba(11, 31, 77, 0.5);
+}
+.group-heading { margin-top: 0; }
+.group-heading small {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--paper);
+}
+.subject-heading {
+  margin: 26px 0 16px;
+  padding: 0;
+}
+.subject-heading span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 17px var(--serif);
+}
+.subject-heading span::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+
+/* Note page */
+.detail {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: 56px;
+}
+.detail .back {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+.detail-layout {
+  max-width: 1040px;
+  margin-top: 28px;
+  padding: 36px;
+  gap: 48px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  box-shadow: 0 34px 70px -40px rgba(11, 31, 77, 0.55);
+}
+.detail-art { height: 440px; }
+.detail-copy h1 {
+  margin: 14px 0 18px;
+  font: 500 clamp(28px, 3.6vw, 44px) / 1.1 var(--serif);
+  letter-spacing: -0.02em;
+}
+.detail-description {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(31, 79, 216, 0.08);
+  color: var(--royal);
+  font: 12px var(--mono);
+}
+.rule { border-top-color: var(--line); }
+.preview { color: var(--muted); }
+
+/* My library */
+.library { padding-top: 70px; }
+.library-list { border-top: 0; margin-top: 36px; display: grid; gap: 16px; }
+.library-item {
+  padding: 18px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 14px 32px -24px rgba(11, 31, 77, 0.45);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.library-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 40px -24px rgba(31, 79, 216, 0.5);
+}
+.library-item h3 { min-height: 0; margin: 6px 0; }
+.library-item .card-kicker { color: var(--royal); font-weight: 600; }
+.mini-art { height: 84px; font-size: 48px; }
+
+/* Payment confirmation */
+.callback {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  min-height: 520px;
+  padding-top: 90px;
+  text-align: center;
+}
+.callback .loader { border-top-color: var(--orange); }
+
+/* Empty states */
+.empty {
+  padding: 48px 24px;
+  border: 1px dashed rgba(31, 79, 216, 0.35);
+  border-radius: 18px;
+  background: rgba(31, 79, 216, 0.04);
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* Footer */
+footer {
+  align-items: center;
+  padding: 30px 5vw;
+  font-size: 10px;
+}
+footer span:nth-child(2) { color: #fff; letter-spacing: 0.16em; }
+
+@media (max-width: 760px) {
+  .level-group { padding: 18px; border-radius: 18px; }
+  .search-input { width: min(100%, 280px); }
+  .detail-layout { padding: 18px; gap: 26px; border-radius: 20px; }
+  .detail-art { height: 300px; }
+  .library-item { padding: 14px; }
+  .callback { min-height: 420px; }
+}
