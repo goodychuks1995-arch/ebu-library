@@ -366,13 +366,89 @@ function App() {
         </main>
       )}
       {view === "collection" && selected && (
-        <ArticleDetail
-          article={selected}
-          onBack={() => setSelected(null)}
-          onBuy={() => buy(selected)}
-          onDownload={() => downloadFile(selected.id).catch((error) => setNotice(error.message))}
-          owned={owned(selected.id)}
-        />
+       function ArticleDetail({ article, onBack, onBuy, onDownload, onRead, owned }) {
+  const [readerUrl, setReaderUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const canAccess = owned || !article.is_premium;
+
+  async function openReader() {
+    setBusy(true);
+    setError("");
+    try {
+      setReaderUrl(await onRead(article.id));
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="detail">
+      <button className="back" onClick={onBack}>
+        ← Back to collection
+      </button>
+      <div className="detail-layout">
+        <div className="detail-art">
+          <span>
+            FIELD
+            <br />
+            NOTE
+          </span>
+          <strong>{article.title?.slice(0, 1)}</strong>
+        </div>
+        <div className="detail-copy">
+          <p className="eyebrow">
+            {article.is_premium ? "PREMIUM NOTE" : "OPEN ACCESS"}
+          </p>
+          <h1>{article.title}</h1>
+          <p className="detail-description">
+            {article.description ||
+              article.preview_text ||
+              "A considered piece of study material for curious minds."}
+          </p>
+          <div className="rule" />
+          <p className="preview">
+            {article.preview_text ||
+              "Read, reflect, and return to the ideas that stay with you."}
+          </p>
+          {canAccess ? (
+            <div className="detail-actions">
+              <button className="button button-accent" onClick={openReader} disabled={busy}>
+                {busy ? "Opening..." : "Read online"} <span>↗</span>
+              </button>
+              <button className="button button-outline" onClick={onDownload}>
+                {owned ? "Download your copy" : "Download free"} <span>↓</span>
+              </button>
+            </div>
+          ) : (
+            <button className="button button-dark" onClick={onBuy}>
+              {`Get the note · ${money(article.price_kobo)}`} <span>↗</span>
+            </button>
+          )}
+          {error && <p className="reader-error">{error}</p>}
+        </div>
+      </div>
+
+      {readerUrl && (
+        <section className="reader">
+          <div className="reader-bar">
+            <strong>{article.title}</strong>
+            <div className="reader-actions">
+              <a className="reader-link" href={readerUrl} target="_blank" rel="noopener noreferrer">
+                Open in new tab
+              </a>
+              <button className="reader-link" onClick={onDownload}>Download</button>
+              <button className="reader-link" onClick={() => setReaderUrl("")}>Close</button>
+            </div>
+          </div>
+          <iframe className="reader-frame" src={readerUrl} title={article.title} />
+        </section>
+      )}
+    </main>
+  );
+}
       )}
       {view === "library" && (
         <Library
