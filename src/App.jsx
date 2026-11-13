@@ -277,6 +277,11 @@ function App() {
               >
                 Browse the collection <span>↘</span>
               </button>
+                            <ul className="trust">
+                <li>JSS 1 – SS 3</li>
+                <li>Weekly lesson notes</li>
+                <li>Instant download</li>
+              </ul>
             </div>
                 <div className="hero-art">
               <img src="/BinaryThinker Academy Student Success.png" alt="Binarythinker Academy" />
