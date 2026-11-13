@@ -201,7 +201,7 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <button className="brand" onClick={goCatalog}>
-          <span className="brand-mark">E</span>
+          <span className="brand-mark">B</span>
           <span>
             BINARY THINKER'S
             <br />
