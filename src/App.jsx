@@ -725,10 +725,14 @@ function News({ items, isAdmin, onChange, setNotice }) {
 
   return (
     <main className="news">
+         <main className="news news-list">
       <p className="eyebrow">LATEST UPDATES</p>
       <h1>
         The <em>news.</em>
       </h1>
+      <p className="news-intro">
+        JAMB, WAEC, admissions and school updates, explained clearly.
+      </p>
       {isAdmin && (
         <form className="news-form" onSubmit={publish}>
           <input
@@ -753,28 +757,59 @@ function News({ items, isAdmin, onChange, setNotice }) {
           <button className="button button-dark">Publish ↗</button>
         </form>
       )}
-      {items.length ? (
-        items.map((item) => (
-          <article className="news-item" key={item.id}>
-            <small>{formatDate(item)}</small>
-            <h3>
-              <button className="news-headline" onClick={() => openStory(item.id)}>
-                {item.title}
-              </button>
-            </h3>
-            {item.image_url && <img className="news-image" src={item.image_url} alt="" />}
-            <p className="news-excerpt">{excerpt(item.body, item.title)}</p>
-            <button className="text-button" onClick={() => openStory(item.id)}>
-              Read full story →
-            </button>
-          </article>
-        ))
+        {items.length ? (
+        <>
+          {items.slice(0, 1).map((item) => (
+            <article
+              className={`news-featured${item.image_url ? "" : " no-img"}`}
+              key={item.id}
+            >
+              {item.image_url && (
+                <img className="news-featured-img" src={item.image_url} alt={item.title} />
+              )}
+              <div className="news-featured-body">
+                <span className="news-tag">Latest</span>
+                <small className="news-date">{formatDate(item)}</small>
+                <h2>
+                  <button className="news-headline" onClick={() => openStory(item.id)}>
+                    {item.title}
+                  </button>
+                </h2>
+                <p className="news-excerpt">{excerpt(item.body, item.title, 260)}</p>
+                <button className="read-more" onClick={() => openStory(item.id)}>
+                  Read full story →
+                </button>
+              </div>
+            </article>
+          ))}
+
+          <div className="news-grid">
+            {items.slice(1).map((item) => (
+              <article className="news-card" key={item.id}>
+                {item.image_url ? (
+                  <img className="news-card-img" src={item.image_url} alt={item.title} />
+                ) : (
+                  <div className="news-card-ph">B</div>
+                )}
+                <div className="news-card-body">
+                  <small className="news-date">{formatDate(item)}</small>
+                  <h3>
+                    <button className="news-headline" onClick={() => openStory(item.id)}>
+                      {item.title}
+                    </button>
+                  </h3>
+                  <p className="news-excerpt">{excerpt(item.body, item.title, 140)}</p>
+                  <button className="read-more" onClick={() => openStory(item.id)}>
+                    Read story →
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="empty">No news yet. Check back soon.</div>
       )}
-    </main>
-  );
-} 
 function Callback({ onDone, onError }) {
   useEffect(() => {
     const reference = new URLSearchParams(window.location.search).get(
