@@ -281,21 +281,6 @@ function App() {
                 <div className="hero-art">
               <img src="/Academy.jpg" alt="Binarythinker Academy" />
             </div>
-              <div className="sun" />
-              <div className="orbit orbit-one" />
-              <div className="orbit orbit-two" />
-              <div className="art-note">
-                ISSUE
-                <br />
-                <strong>07</strong>
-                <br />
-                <span>
-                  THE FIELD
-                  <br />
-                  EDITION
-                </span>
-              </div>
-            </div>
           </section>
         </main>
       )}
