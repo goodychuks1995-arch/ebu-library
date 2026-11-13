@@ -148,6 +148,18 @@ h1 em {
   line-height: 1.7;
   margin-bottom: 31px;
 }
+.hero-copy {
+  max-width: 390px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 31px;
+}
+.hero-art {
+  height: 390px;
+  position: relative;
+  background: var(--blue);
+  overflow: hidden;
+}
 .hero-art img {
   display: block;
   width: 100%;
