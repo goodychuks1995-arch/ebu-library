@@ -1664,3 +1664,36 @@ footer span:nth-child(2) { color: #fff; letter-spacing: 0.16em; }
   .reader-frame { height: 70vh; }
   .reader-bar strong { max-width: 100%; }
 }
+
+.footer-links {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+}
+.footer-links a {
+  color: #c3cfee;
+  font: 11px var(--mono);
+  letter-spacing: 0.06em;
+  text-decoration: none;
+}
+.footer-links a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+footer {
+  align-items: center;
+  text-align: center;
+}
+@media (min-width: 761px) {
+  footer {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 24px;
+    text-align: left;
+  }
+  footer > span:last-child {
+    text-align: right;
+  }
+}
