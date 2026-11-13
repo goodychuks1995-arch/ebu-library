@@ -5,11 +5,11 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
 const FOOTER_DOCS = [
-  ["About us", "/documents/about-us.pdf"],
-  ["Contact us", "/documents/contact-us.pdf"],
-  ["Privacy policy", "/documents/privacy-policy.pdf"],
-  ["Terms and conditions", "/documents/terms-and-conditions.pdf"],
-  ["Disclaimer", "/documents/disclaimer.pdf"],
+  ["About us", "/public/about_us.pdf"],
+  ["Contact us", "/public/contact_us.pdf"],
+  ["Privacy policy", "/public/privacy_policy.pdf"],
+  ["Terms and conditions", "/public/terms-and-conditions.pdf"],
+  ["Disclaimer", "/public/disclaimer.pdf"],
 ];
 
 function getArticleLevel(article = {}) {
