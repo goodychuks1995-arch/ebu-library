@@ -1,13 +1,18 @@
 :root {
-  --ink: #252522;
-  --muted: #777269;
-  --paper: #f4f0e8;
-  --cream: #fbf9f4;
-  --orange: #e9673d;
-  --blue: #a9c7c1;
-  --line: #d9d3c8;
+  color-scheme: light;
+  --ink: #0b1f4d;
+  --muted: #5b6a8a;
+  --paper: #eef3ff;
+  --cream: #f7f9ff;
+  --orange: #f58220;
+  --blue: #1f4fd8;
+  --line: #d3dcf0;
   --mono: "DM Mono", monospace;
   --serif: "Playfair Display", serif;
+}
+body {
+  background: var(--cream);
+  color: var(--ink);
 }
 #root {
   min-height: 100vh;
