@@ -1133,3 +1133,114 @@ footer {
   color: #a9b6d6;
   border-top: 0;
 }
+/* ---------- Top bar layout ---------- */
+.topbar nav button { border-bottom: 0; }
+
+.topbar nav button.active {
+  color: var(--navy);
+  border-bottom: 0;
+}
+
+.search-button {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+}
+.search-button:hover { border-color: var(--royal); color: var(--royal); }
+
+.profile {
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.profile:hover { border-color: var(--orange); }
+
+/* Desktop and tablet */
+@media (min-width: 761px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: 76px;
+    padding: 0 clamp(20px, 5vw, 64px);
+  }
+  .topbar .brand { justify-self: start; }
+  .topbar nav {
+    margin-left: 0;
+    gap: 4px;
+    padding: 5px;
+    border-radius: 999px;
+    background: rgba(11, 31, 77, 0.06);
+  }
+  .topbar nav button {
+    padding: 9px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .topbar nav button:hover { color: var(--ink); }
+  .topbar nav button.active {
+    background: #fff;
+    color: var(--navy);
+    box-shadow: 0 2px 8px -2px rgba(11, 31, 77, 0.3);
+  }
+  .top-actions { justify-self: end; gap: 12px; }
+}
+
+/* Phones */
+@media (max-width: 760px) {
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    height: auto;
+    padding: 12px 16px 0;
+    row-gap: 10px;
+  }
+  .topbar .brand { order: 1; }
+  .top-actions {
+    order: 2;
+    width: auto;
+    margin-left: auto;
+    gap: 10px;
+  }
+  .top-actions .button {
+    width: auto;
+    padding: 10px 18px;
+  }
+  .topbar nav {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    gap: 6px;
+    padding: 4px 0 12px;
+    border-top: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .topbar nav::-webkit-scrollbar { display: none; }
+  .topbar nav button {
+    flex: 1 0 auto;
+    padding: 9px 16px;
+    border-radius: 999px;
+    background: rgba(11, 31, 77, 0.06);
+    font-size: 13px;
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .topbar nav button.active {
+    background: var(--navy);
+    color: #fff;
+  }
+}
