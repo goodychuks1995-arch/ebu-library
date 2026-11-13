@@ -284,7 +284,7 @@ function App() {
               </ul>
             </div>
                 <div className="hero-art">
-              <img src="/BinaryThinker Academy Student Success.png" alt="Binarythinker Academy" />
+              <img src="/BinaryThinker Academy Student Success.png" alt="Binarythinker Academy"/>
             </div>
           </section>
         </main>
@@ -723,9 +723,8 @@ function News({ items, isAdmin, onChange, setNotice }) {
     );
   }
 
-  return (
-    <main className="news">
-         <main className="news news-list">
+      return (
+    <main className="news news-list">
       <p className="eyebrow">LATEST UPDATES</p>
       <h1>
         The <em>news.</em>
@@ -807,9 +806,12 @@ function News({ items, isAdmin, onChange, setNotice }) {
             ))}
           </div>
         </>
-      ) : (
+           ) : (
         <div className="empty">No news yet. Check back soon.</div>
       )}
+    </main>
+  );
+}
 function Callback({ onDone, onError }) {
   useEffect(() => {
     const reference = new URLSearchParams(window.location.search).get(
