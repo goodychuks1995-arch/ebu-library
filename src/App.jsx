@@ -4,6 +4,13 @@ import "./App.css";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
+const FOOTER_DOCS = [
+  ["About us", "/documents/about-us.pdf"],
+  ["Contact us", "/documents/contact-us.pdf"],
+  ["Privacy policy", "/documents/privacy-policy.pdf"],
+  ["Terms and conditions", "/documents/terms-and-conditions.pdf"],
+  ["Disclaimer", "/documents/disclaimer.pdf"],
+];
 
 function getArticleLevel(article = {}) {
   const [level] = (article.description || "").split(" - ");
@@ -345,6 +352,15 @@ function App() {
         />
       )}
       <footer>
+        <span>© 2026 BINARY THINKERS</span>
+        <div className="footer-links">
+          {FOOTER_DOCS.map(([label, href]) => (
+            <a key={href} href={href} target="_blank" rel="noopener noreferrer">
+              {label}
+            </a>
+          ))}
+        </div>
+        <span>Think clearly. Learn deeply.</span>
         <span>© 2026 BINARY THINKERS</span>
         <span>LEARN SLOWLY. REMEMBER MORE.</span>
         <span>Think clearly. Learn deeply.</span>
