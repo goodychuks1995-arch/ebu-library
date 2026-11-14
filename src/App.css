@@ -69,7 +69,7 @@ nav button,
 .topbar nav {
   display: flex;
   gap: 34px;
-  margin-left: 4vw;
+  margin-left: 8vw;
 }
 .topbar nav button {
   padding: 31px 0;
@@ -87,7 +87,7 @@ nav button,
 .profile {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap:6px;
 }
 .button {
   border: 0;
