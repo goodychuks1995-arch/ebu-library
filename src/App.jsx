@@ -4,7 +4,6 @@ const FOOTER_DOCS = [
   ["About us", "/About_us.pdf"],
   ["Contact us", "/Contact_us.pdf"],
   ["Privacy policy", "/Privacy_policy.pdf"],
-  ["Terms and conditions", "/terms-and-conditions.pdf"],
   ["Disclaimer", "/Disclaimer.pdf"],
 ];
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -210,7 +209,7 @@ function App() {
   function navigate(key, options = {}) {
     setSelected(null);
     window.scrollTo({ top: 0 });
-`    if (key === "about") return window.open("/About_us.pdf", "_blank", "noopener");
+` `    if (key === "about") return window.open("/About_us.pdf", "_blank", "noopener");
     if (key === "home") return goCatalog();
     if (key === "teachers") return browseCollection(options.level);
     if (key === "news") return setView("news");
