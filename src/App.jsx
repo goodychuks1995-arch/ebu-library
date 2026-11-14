@@ -351,7 +351,7 @@ function App() {
           onError={setNotice}
         />
       )}
-      <footer>
+            <footer>
         <span>© 2026 BINARY THINKERS</span>
         <div className="footer-links">
           {FOOTER_DOCS.map(([label, href]) => (
@@ -360,9 +360,6 @@ function App() {
             </a>
           ))}
         </div>
-        <span>Think clearly. Learn deeply.</span>
-        <span>© 2026 BINARY THINKERS</span>
-        <span>LEARN SLOWLY. REMEMBER MORE.</span>
         <span>Think clearly. Learn deeply.</span>
       </footer>
       {showReturnToTop && (
