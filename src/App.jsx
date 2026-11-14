@@ -5,13 +5,12 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
-const FOOTER_DOCS = [
-  ["About us", "/About_us.pdf"],
-  ["Contact us", "/Contact_us.pdf"],
-  ["Privacy policy", "/Privacy_policy.pdf"],
-  ["Terms and conditions", "/terms-and-conditions.pdf"],
-  ["Disclaimer", "/Disclaimer.pdf"],
-];
+import aboutPdf from "./assets/About_us.pdf?url";
+import contactPdf from "./assets/Contact_us.pdf?url";
+import privacyPdf from "./assets/Privacy_policy.pdf?url";
+import termsPdf from "./assets/terms-and-conditions.pdf?url";
+import disclaimerPdf from "./assets/Disclaimer.pdf?url";
+
 const NAV_ITEMS = [
   { key: "home", label: "Home" },
   { key: "student", label: "Student Resources" },
@@ -463,6 +462,13 @@ function App() {
       )}
 
       <footer>
+        const FOOTER_DOCS = [
+  ["About us", aboutPdf],
+  ["Contact us", contactPdf],
+  ["Privacy policy", privacyPdf],
+  ["Terms and conditions", termsPdf],
+  ["Disclaimer", disclaimerPdf],
+];
         <span>© 2026 BINARY THINKERS</span>
         <div className="footer-links">
           {FOOTER_DOCS.map(([label, href]) => (
