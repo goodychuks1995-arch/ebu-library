@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 const FOOTER_DOCS = [
-  ["About us", "/About_us.pdf"],
+  ["About us", "/About_Us.pdf"],
   ["Contact us", "/Contact_us.pdf"],
   ["Privacy policy", "/Privacy_policy.pdf"],
   ["Disclaimer", "/Disclaimer.pdf"],
@@ -209,7 +209,7 @@ function App() {
     function navigate(key, options = {}) {
     setSelected(null);
     window.scrollTo({ top: 0 });
-    if (key === "about") return window.open("/About_us.pdf", "_blank", "noopener");
+    if (key === "about") return window.open("/About_Us.pdf", "_blank", "noopener");
     if (key === "home") return goCatalog();
     if (key === "teachers") return browseCollection(options.level);
     if (key === "news") return setView("news");
