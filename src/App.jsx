@@ -6,13 +6,12 @@ const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal 
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
 const FOOTER_DOCS = [
-  ["About us", "/public/About_us.pdf"],
-  ["Contact us", "/public/Contact_us.pdf"],
-  ["Privacy policy", "/public/Privacy_policy.pdf"],
-  ["Terms and conditions", "/public/terms-and-conditions.pdf"],
-  ["Disclaimer", "/public/Disclaimer.pdf"],
+  ["About us", "/About_us.pdf"],
+  ["Contact us", "/Contact_us.pdf"],
+  ["Privacy policy", "/Privacy_policy.pdf"],
+  ["Terms and conditions", "/terms-and-conditions.pdf"],
+  ["Disclaimer", "/Disclaimer.pdf"],
 ];
-
 const NAV_ITEMS = [
   { key: "home", label: "Home" },
   { key: "student", label: "Student Resources" },
@@ -82,6 +81,14 @@ function getSubjectWeekRange(items = []) {
   const max = Math.max(...weeks);
   return min === max ? `Week ${min}` : `Weeks ${min}–${max}`;
 }
+function tokenExpired(token) {
+  try {
+    const { exp } = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return Boolean(exp) && exp * 1000 < Date.now();
+  } catch {
+    return false;
+  }
+}
 
 async function api(path, options = {}) {
   const token = localStorage.getItem("article_token");
@@ -92,10 +99,14 @@ async function api(path, options = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${API_URL}${path}`, { ...options, headers });
   const data = await response.json().catch(() => ({}));
+  if (response.status === 401 && token && !path.startsWith("/auth/")) {
+    localStorage.removeItem("article_token");
+    localStorage.removeItem("article_user");
+    window.dispatchEvent(new Event("session-expired"));
+  }
   if (!response.ok) throw new Error(data.error || data.message || "Something went wrong");
   return data;
 }
-
 async function downloadFile(articleId) {
   const data = await api(`/downloads/${articleId}`);
   window.location.href = data.url;
@@ -108,8 +119,15 @@ async function getViewUrl(articleId) {
 
 function App() {
   const [articles, setArticles] = useState([]);
-  const [news, setNews] = useState([]);
-  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("article_user") || "null"));
+  const [news, setNews] = useState([]);  const [user, setUser] = useState(() => {
+    const token = localStorage.getItem("article_token");
+    if (token && tokenExpired(token)) {
+      localStorage.removeItem("article_token");
+      localStorage.removeItem("article_user");
+      return null;
+    }
+    return JSON.parse(localStorage.getItem("article_user") || "null");
+  });
   const [view, setView] = useState("catalog");
   const [section, setSection] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -124,6 +142,18 @@ function App() {
     if (user) api("/articles").then(setArticles).catch((error) => setNotice(error.message));
     if (new URLSearchParams(window.location.search).has("reference")) setView("callback");
   }, [user]);
+    useEffect(() => {
+    const onExpired = () => {
+      setUser(null);
+      setPurchases([]);
+      setSelected(null);
+      setView("catalog");
+      setNotice("Your session expired. Please sign in again.");
+      setModal("login");
+    };
+    window.addEventListener("session-expired", onExpired);
+    return () => window.removeEventListener("session-expired", onExpired);
+  }, []);
   useEffect(() => {
     if (view === "news") api("/news").then(setNews).catch((error) => setNotice(error.message));
   }, [view]);
@@ -181,7 +211,7 @@ function App() {
   function navigate(key, options = {}) {
     setSelected(null);
     window.scrollTo({ top: 0 });
-    if (key === "about") return window.open("/public/About_us.pdf", "_blank", "noopener");
+    if (key === "about") return window.open("/About_us.pdf", "_blank", "noopener");
     if (key === "home") return goCatalog();
     if (key === "teachers") return browseCollection(options.level);
     if (key === "news") return setView("news");
