@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
 const FOOTER_DOCS = [
@@ -11,6 +12,42 @@ const FOOTER_DOCS = [
   ["Terms and conditions", "/public/terms-and-conditions.pdf"],
   ["Disclaimer", "/public/Disclaimer.pdf"],
 ];
+
+const NAV_ITEMS = [
+  { key: "home", label: "Home" },
+  { key: "student", label: "Student Resources" },
+  { key: "teachers", label: "Teachers' Resources" },
+  { key: "cbt", label: "CBT Practice" },
+  { key: "courses", label: "Online Courses" },
+  { key: "school", label: "School Resources" },
+  { key: "seller", label: "Become a Seller" },
+  { key: "news", label: "News" },
+  { key: "about", label: "About" },
+];
+
+const SECTIONS = {
+  student: {
+    title: "Student Resources",
+    blurb: "Study guides, revision notes and past questions for JSS 1 – SS 3 students.",
+  },
+  cbt: {
+    title: "CBT Practice",
+    blurb: "Practise JAMB, WAEC and NECO style questions in a real computer-based test setting.",
+    cta: CBT_URL ? { label: "Start practising", href: CBT_URL } : null,
+  },
+  courses: {
+    title: "Online Courses",
+    blurb: "Learn at your own pace with structured video courses, anytime and anywhere.",
+  },
+  school: {
+    title: "School Resources",
+    blurb: "Tools and materials for schools: timetables, schemes of work, and school management.",
+  },
+  seller: {
+    title: "Become a Seller",
+    blurb: "Teachers and creators can sell study materials and courses to learners across Nigeria.",
+  },
+};
 
 function getArticleLevel(article = {}) {
   const [level] = (article.description || "").split(" - ");
@@ -75,6 +112,7 @@ function App() {
   const [news, setNews] = useState([]);
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("article_user") || "null"));
   const [view, setView] = useState("catalog");
+  const [section, setSection] = useState(null);
   const [selected, setSelected] = useState(null);
   const [modal, setModal] = useState(null);
   const [purchases, setPurchases] = useState([]);
@@ -99,7 +137,6 @@ function App() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
   const filteredArticles = articles.filter((article) =>
     `${article.title} ${article.description || ""}`.toLowerCase().includes(search.toLowerCase()),
   );
@@ -129,15 +166,46 @@ function App() {
   const groupedDisplay =
     selectedLevel === "ALL CLASSES" ? classGroups : classGroups.filter((group) => group.level === selectedLevel);
   const owned = (id) => purchases.some((purchase) => String(purchase.article_id) === String(id));
+
   const goCatalog = () => {
     setView("catalog");
     setSelected(null);
   };
-  const browseCollection = () => {
+  const browseCollection = (level = "ALL CLASSES") => {
     if (!user) return setModal("login");
     setSelected(null);
+    setSelectedLevel(level);
     setView("collection");
   };
+
+  // Single entry point for every nav link
+  function navigate(key, options = {}) {
+    setSelected(null);
+    window.scrollTo({ top: 0 });
+    if (key === "about") return window.open("/public/About_us.pdf", "_blank", "noopener");
+    if (key === "home") return goCatalog();
+    if (key === "teachers") return browseCollection(options.level);
+    if (key === "news") return setView("news");
+    if (key === "library") return setView("library");
+    if (SECTIONS[key]) {
+      setSection(key);
+      setView("section");
+    }
+  }
+
+  const activeKey =
+    view === "catalog"
+      ? "home"
+      : view === "collection"
+        ? "teachers"
+        : view === "section"
+          ? section
+          : view === "news"
+            ? "news"
+            : view === "library"
+              ? "library"
+              : null;
+
   function saveSession(data) {
     localStorage.setItem("article_token", data.token);
     localStorage.setItem("article_user", JSON.stringify(data.user));
@@ -171,6 +239,11 @@ function App() {
     goCatalog();
   }
 
+  function focusSearch() {
+    if (view !== "collection") return browseCollection();
+    document.querySelector(".search-input")?.focus();
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -183,26 +256,23 @@ function App() {
           </span>
         </button>
         <nav>
-          <button className={view === "catalog" ? "active" : ""} onClick={goCatalog}>
-            Explore
-          </button>
-          <button
-            className={view === "news" ? "active" : ""}
-            onClick={() => {
-              setSelected(null);
-              setView("news");
-            }}
-          >
-            News
-          </button>
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              className={activeKey === item.key ? "active" : ""}
+              onClick={() => navigate(item.key)}
+            >
+              {item.label}
+            </button>
+          ))}
           {user && (
-            <button className={view === "library" ? "active" : ""} onClick={() => setView("library")}>
+            <button className={view === "library" ? "active" : ""} onClick={() => navigate("library")}>
               My library
             </button>
           )}
         </nav>
         <div className="top-actions">
-          <button className="search-button" onClick={() => document.querySelector(".search-input")?.focus()}>
+          <button className="search-button" onClick={focusSearch}>
             ⌕ <span>Search</span>
           </button>
           {user ? (
@@ -216,12 +286,14 @@ function App() {
           )}
         </div>
       </header>
+
       {notice && (
         <div className="notice">
           {notice}
           <button onClick={() => setNotice("")}>×</button>
         </div>
       )}
+
       {view === "catalog" && !selected && (
         <main>
           <section className="hero">
@@ -236,7 +308,7 @@ function App() {
                 A considered library of lesson notes, field guides, and deep dives for the days when you want to
                 learn with intention.
               </p>
-              <button className="button button-accent" onClick={browseCollection}>
+              <button className="button button-accent" onClick={() => browseCollection()}>
                 Browse the collection <span>↘</span>
               </button>
               <ul className="trust">
@@ -251,6 +323,15 @@ function App() {
           </section>
         </main>
       )}
+
+      {view === "section" && section && SECTIONS[section] && (
+        <SectionPage
+          {...SECTIONS[section]}
+          onBrowse={() => browseCollection()}
+          onHome={() => navigate("home")}
+        />
+      )}
+
       {view === "collection" && !selected && (
         <main className="collection">
           <div className="section-heading">
@@ -351,7 +432,8 @@ function App() {
           onError={setNotice}
         />
       )}
-            <footer>
+
+      <footer>
         <span>© 2026 BINARY THINKERS</span>
         <div className="footer-links">
           {FOOTER_DOCS.map(([label, href]) => (
@@ -381,6 +463,31 @@ function App() {
         />
       )}
     </div>
+  );
+}
+
+function SectionPage({ title, blurb, cta, onBrowse, onHome }) {
+  return (
+    <main className="section-page">
+      <p className="eyebrow">BINARY THINKER'S ACADEMY</p>
+      <h1>{title}</h1>
+      <p className="subhead">{blurb}</p>
+      <div className="section-actions">
+        {cta ? (
+          <a className="button button-accent" href={cta.href} target="_blank" rel="noopener noreferrer">
+            {cta.label} <span>↗</span>
+          </a>
+        ) : (
+          <p className="section-soon">This section is coming soon.</p>
+        )}
+        <button className="button button-outline" onClick={onBrowse}>
+          Browse lesson notes <span>↘</span>
+        </button>
+        <button className="text-button" onClick={onHome}>
+          ← Back to home
+        </button>
+      </div>
+    </main>
   );
 }
 
