@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import "./App.css";
 const FOOTER_DOCS = [
   ["About us", "/About_Us.pdf"],
-  ["Contact us", "/Contact_us.pdf"],
-  ["Privacy policy", "/Privacy_policy.pdf"],
+  ["Contact us", "/Contact_Us.pdf"],
+  ["Privacy policy", "/Privacy_Policy.pdf"],
   ["Disclaimer", "/Disclaimer.pdf"],
 ];
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
