@@ -1,16 +1,22 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
-const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
-const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
 import aboutPdf from "./assets/About_us.pdf?url";
 import contactPdf from "./assets/Contact_us.pdf?url";
 import privacyPdf from "./assets/Privacy_policy.pdf?url";
 import termsPdf from "./assets/terms-and-conditions.pdf?url";
 import disclaimerPdf from "./assets/Disclaimer.pdf?url";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
+const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
+const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
 
+    const FOOTER_DOCS = [
+  ["About us", aboutPdf],
+  ["Contact us", contactPdf],
+  ["Privacy policy", privacyPdf],
+  ["Terms and conditions", termsPdf],
+  ["Disclaimer", disclaimerPdf],
+];
 const NAV_ITEMS = [
   { key: "home", label: "Home" },
   { key: "student", label: "Student Resources" },
@@ -210,7 +216,7 @@ function App() {
   function navigate(key, options = {}) {
     setSelected(null);
     window.scrollTo({ top: 0 });
-    if (key === "about") return window.open("/About_us.pdf", "_blank", "noopener");
+       if (key === "about") return window.open(aboutPdf, "_blank", "noopener");
     if (key === "home") return goCatalog();
     if (key === "teachers") return browseCollection(options.level);
     if (key === "news") return setView("news");
@@ -462,13 +468,6 @@ function App() {
       )}
 
       <footer>
-        const FOOTER_DOCS = [
-  ["About us", aboutPdf],
-  ["Contact us", contactPdf],
-  ["Privacy policy", privacyPdf],
-  ["Terms and conditions", termsPdf],
-  ["Disclaimer", disclaimerPdf],
-];
         <span>© 2026 BINARY THINKERS</span>
         <div className="footer-links">
           {FOOTER_DOCS.map(([label, href]) => (
