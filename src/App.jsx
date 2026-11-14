@@ -22,7 +22,6 @@ const NAV_ITEMS = [
   { key: "school", label: "School Resources" },
   { key: "seller", label: "Become a Seller" },
   { key: "news", label: "News" },
-  { key: "about", label: "About" },
 ];
 
 const SECTIONS = {
