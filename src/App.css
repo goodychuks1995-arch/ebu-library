@@ -1798,3 +1798,36 @@ footer {
   .top-actions .search-button,
   .top-actions .profile { padding: 9px 12px; }
 }
+/* ---------- Section pages ---------- */
+.section-page {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 80px 1.25rem 100px;
+}
+.section-page h1 {
+  margin: 14px 0 16px;
+  font: 500 clamp(36px, 5vw, 60px) / 1.05 var(--serif);
+  letter-spacing: -0.03em;
+}
+.section-page .subhead {
+  max-width: 34rem;
+  font-size: 18px;
+  line-height: 1.7;
+}
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+.section-actions a.button { text-decoration: none; }
+.section-soon {
+  margin: 0;
+  padding: 10px 16px;
+  border: 1px dashed rgba(31, 79, 216, 0.35);
+  border-radius: 999px;
+  background: rgba(31, 79, 216, 0.05);
+  color: var(--muted);
+  font: 12px var(--mono);
+}
