@@ -65,19 +65,28 @@ nav button,
   color: var(--paper);
   font: 600 20px var(--serif);
 }
+/* Make the center nav more compact */
+@media (min-width: 761px) {
+  .topbar nav {
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .topbar nav button {
+    padding: 8px 14px;          /* was 9px 20px */
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+}
+
+/* Prevent items from getting too cramped */
 .topbar nav {
-  display: flex;
-  gap: 34px;
-  margin-left: 8vw;
+  max-width: 720px;             /* optional hard limit */
+  overflow-x: auto;
+  scrollbar-width: none;
 }
-.topbar nav button {
-  padding: 31px 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-.topbar nav button.active {
-  color: var(--ink);
-  border-bottom: 2px solid var(--orange);
+.topbar nav::-webkit-scrollbar {
+  display: none;
 }
 .search-button {
   font: 13px var(--mono);
