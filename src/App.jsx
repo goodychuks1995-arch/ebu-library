@@ -206,10 +206,10 @@ function App() {
   };
 
   // Single entry point for every nav link
-  function navigate(key, options = {}) {
+    function navigate(key, options = {}) {
     setSelected(null);
     window.scrollTo({ top: 0 });
-` `    if (key === "about") return window.open("/About_us.pdf", "_blank", "noopener");
+    if (key === "about") return window.open("/About_us.pdf", "_blank", "noopener");
     if (key === "home") return goCatalog();
     if (key === "teachers") return browseCollection(options.level);
     if (key === "news") return setView("news");
