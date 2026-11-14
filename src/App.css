@@ -64,29 +64,20 @@ nav button,
   background: var(--ink);
   color: var(--paper);
   font: 600 20px var(--serif);
+  
+}.topbar nav {
+  display: flex;
+  gap: 25px;
+  margin-left: 8vw;
 }
-/* Make the center nav more compact */
-@media (min-width: 761px) {
-  .topbar nav {
-    gap: 2px;
-    padding: 4px;
-  }
-
-  .topbar nav button {
-    padding: 8px 14px;          /* was 9px 20px */
-    font-size: 12.5px;
-    white-space: nowrap;
-  }
+.topbar nav button {
+  padding: 23px 0;
+  font-size: 13px;
+  color: var(--muted);
 }
-
-/* Prevent items from getting too cramped */
-.topbar nav {
-  max-width: 720px;             /* optional hard limit */
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.topbar nav::-webkit-scrollbar {
-  display: none;
+.topbar nav button.active {
+  color: var(--ink);
+  border-bottom: 2px solid var(--orange);
 }
 .search-button {
   font: 13px var(--mono);
