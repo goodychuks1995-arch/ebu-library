@@ -1768,3 +1768,26 @@ footer {
     font-size: 12.5px;
   }
 }
+/* ---------- Search and sign in/out buttons ---------- */
+.top-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.top-actions .search-button,
+.top-actions .profile,
+.top-actions .button {
+  width: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.top-actions .search-button {
+  padding: 9px 16px;
+}
+.top-actions .profile {
+  padding: 8px 16px;
+}
