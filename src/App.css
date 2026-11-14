@@ -65,13 +65,14 @@ nav button,
   color: var(--paper);
   font: 600 20px var(--serif);
   
-}.topbar nav {
+}
+.topbar nav {
   display: flex;
-  gap: 25px;
-  margin-left: 8vw;
+  gap: 34px;
+  margin-left: 4vw;
 }
 .topbar nav button {
-  padding: 23px 0;
+  padding: 31px 0;
   font-size: 13px;
   color: var(--muted);
 }
