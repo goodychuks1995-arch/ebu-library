@@ -1791,3 +1791,10 @@ footer {
 .top-actions .profile {
   padding: 8px 16px;
 }
+@media (max-width: 420px) {
+  .top-actions { gap: 8px; }
+  .top-actions .search-button span,
+  .top-actions .profile span { display: none; }
+  .top-actions .search-button,
+  .top-actions .profile { padding: 9px 12px; }
+}
