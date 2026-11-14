@@ -78,7 +78,8 @@ nav button,
 .topbar nav button.active {
   color: var(--ink);
   border-bottom: 2px solid var(--orange);
-}.search-button {
+}
+.search-button {
   font: 13px var(--mono);
   color: var(--muted);
 }
