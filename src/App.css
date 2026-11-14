@@ -67,19 +67,27 @@ nav button,
 }
 .topbar nav {
   display: flex;
-  gap: 34px;
-  margin-left: 8vw;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 6px 20px;
+  border-radius: 999px;
+  background: rgba(11, 31, 77, 0.06);
 }
+
 .topbar nav button {
-  padding: 31px 0;
+  padding: 10px 14px;
+  border-radius: 999px;
+  white-space: nowrap;
   font-size: 13px;
-  color: var(--muted);
+  font-weight: 500;
 }
+
 .topbar nav button.active {
-  color: var(--ink);
-  border-bottom: 2px solid var(--orange);
-}
-.top-actions {
+  background: #fff;
+  color: var(--navy);
+  box-shadow: 0 2px 8px rgba(11, 31, 77, 0.15);
+}.top-actions {
   display: flex;
   align-items: center;
   gap: 20px;
