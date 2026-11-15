@@ -11,20 +11,16 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
-
-const NAV_ITEMS = [
+ const NAV_ITEMS = [
   { key: "home", label: "Home" },
-  {
+   {
     key: "student",
     label: "Student Resources",
     children: [
-      { label: "Lessons Notes", level: "ALL CLASSES" },
-      { label: "Past Questions", section: "pastquestions" },
-      { label: "Assigment & Excercise", section: "Assigment" },
-      { label: "Schoolarship Opportunities", section: "Schoolarship" },
-      { label: "Admission Resources", section: "Admission" },
-      { label: "Educational tools", section: "Edu tools" },
-      { label: "study Guides", section:  "studyguides" },
+      { label: "Lesson notes", level: "ALL CLASSES" },
+      { label: "Past questions & answers", section: "pastquestions" },
+      { label: "Textbooks & study guides", section: "studyguides" },
+      { label: "Scholarship opportunities", section: "scholarships" },
     ],
   },
   {
@@ -42,13 +38,7 @@ const NAV_ITEMS = [
       { label: "Lesson plans", section: "lessonplans" },
     ],
   },
-  { key: "courses",
-   label: "Online Courses"
-    children: [
-      { label: "All lesson notes", level: "ALL CLASSES" },
-   ],
-  },
-  
+  { key: "courses", label: "Online Courses" },
   {
     key: "school",
     label: "School Resources",
@@ -59,10 +49,23 @@ const NAV_ITEMS = [
       { label: "School management", section: "management" },
     ],
   },
+     {
+    key: "admissions",
+    label: "Admission Resources",
+    children: [
+      { label: "JAMB guide", section: "jamb" },
+      { label: "Post-UTME", section: "postutme" },
+      { label: "Universities & courses", section: "universities" },
+      { label: "Polytechnics & colleges of education", section: "polytechnics" },
+      { label: "Requirements & cut-off marks", section: "cutoffs" },
+      { label: "Admission news", section: "news" },
+    ],
+  },
   { key: "seller", label: "Become a Seller" },
   { key: "news", label: "News" },
-  
-];const SECTIONS = {
+];
+
+const SECTIONS = {
   student: {
     parent: "student",
     title: "Student Resources",
@@ -78,15 +81,45 @@ const NAV_ITEMS = [
     title: "Become a Seller",
     blurb: "Teachers and creators can sell study materials and courses to learners across Nigeria.",
   },
-  pastquestions: {
+ pastquestions: {
     parent: "student",
-    title: "Past Questions",
-    blurb: "Past JAMB, WAEC and NECO questions with answers, arranged by subject and year.",
+    title: "Past Questions & Answers",
+    blurb: "Past JAMB, WAEC and NECO questions with worked answers, arranged by subject and year.",
   },
-  studyguides: {
+ studyguides: {
     parent: "student",
-    title: "Study Guides",
-    blurb: "Short, clear guides that help students revise a topic quickly.",
+    title: "Textbooks & Study Guides",
+    blurb: "Recommended textbooks and short, clear study guides to help you revise any topic quickly.",
+  },
+  scholarships: {
+    parent: "student",
+    title: "Scholarship Opportunities",
+    blurb: "Scholarships and grants for Nigerian students, with deadlines and how to apply.",
+  },
+    jamb: {
+    parent: "admissions",
+    title: "JAMB Guide",
+    blurb: "Registration steps, syllabus, subject combinations and tips for the UTME.",
+  },
+  postutme: {
+    parent: "admissions",
+    title: "Post-UTME",
+    blurb: "How Post-UTME screening works and how to prepare for it.",
+  },
+  universities: {
+    parent: "admissions",
+    title: "Universities & Courses",
+    blurb: "Find universities and the courses they offer, with the subjects each one requires.",
+  },
+  polytechnics: {
+    parent: "admissions",
+    title: "Polytechnics & Colleges of Education",
+    blurb: "Admission guides for polytechnics, monotechnics and colleges of education.",
+  },
+  cutoffs: {
+    parent: "admissions",
+    title: "Requirements & Cut-off Marks",
+    blurb: "Admission requirements and cut-off marks, explained clearly.",
   },
   schemes: {
     parent: "teachers",
