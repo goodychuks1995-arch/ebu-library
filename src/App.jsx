@@ -11,16 +11,19 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
+
 const NAV_ITEMS = [
   { key: "home", label: "Home" },
   {
     key: "student",
     label: "Student Resources",
     children: [
-      { label: "Overview", section: "student" },
-      { label: "Lesson notes", level: "ALL CLASSES" },
-      { label: "Past questions", section: "pastquestions" },
-      { label: "Study guides", section: "studyguides" },
+      { label: "Lessons Notes", level: "ALL CLASSES" },
+      { label: "Past Questions", section: "Past Question" },
+      { label: "Assigment & Excercise", section: "Assigment" },
+      { label: "Schoolarship Opportunities", section: "Schoolarship" },
+      { label: "Admission Resources", section: "Admission" },
+      { label: "Educational tools", section: "Edu tools" },
     ],
   },
   {
@@ -38,8 +41,13 @@ const NAV_ITEMS = [
       { label: "Lesson plans", section: "lessonplans" },
     ],
   },
-  { key: "cbt", label: "CBT Practice" },
-  { key: "courses", label: "Online Courses" },
+  { key: "courses",
+   label: "Online Courses"
+    children: [
+      { label: "All lesson notes", level: "ALL CLASSES" },
+   ],
+  },
+  
   {
     key: "school",
     label: "School Resources",
@@ -52,6 +60,7 @@ const NAV_ITEMS = [
   },
   { key: "seller", label: "Become a Seller" },
   { key: "news", label: "News" },
+  
 ];const SECTIONS = {
   student: {
     parent: "student",
