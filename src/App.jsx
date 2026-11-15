@@ -87,7 +87,7 @@ const SECTIONS = {
     title: "Past Questions & Answers",
     blurb: "Past JAMB, WAEC and NECO questions with worked answers, arranged by subject and year.",
   },
-   pastquestions: {
+   CBT: {
     parent: "CBT",
     title: "Practice",
     blurb: "Past JAMB, WAEC and NECO questions with worked answers.",
