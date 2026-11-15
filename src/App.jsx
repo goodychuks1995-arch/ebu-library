@@ -5,6 +5,7 @@ const FOOTER_DOCS = [
   ["Contact us", "/Contact_Us.pdf"],
   ["Privacy policy", "/Privacy_Policy.pdf"],
   ["Disclaimer", "/Disclaimer.pdf"],
+  ["Terms and Condition", "/TERMS AND CONDITIONS.docx.pdf"],
 ];
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
