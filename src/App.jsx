@@ -13,17 +13,48 @@ const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
 const NAV_ITEMS = [
   { key: "home", label: "Home" },
-  { key: "student", label: "Student Resources" },
-  { key: "teachers", label: "Teachers' Resources" },
+  {
+    key: "student",
+    label: "Student Resources",
+    children: [
+      { label: "Overview", section: "student" },
+      { label: "Lesson notes", level: "ALL CLASSES" },
+      { label: "Past questions", section: "pastquestions" },
+      { label: "Study guides", section: "studyguides" },
+    ],
+  },
+  {
+    key: "teachers",
+    label: "Teachers' Resources",
+    children: [
+      { label: "All lesson notes", level: "ALL CLASSES" },
+      { label: "JSS 1 notes", level: "JSS 1" },
+      { label: "JSS 2 notes", level: "JSS 2" },
+      { label: "JSS 3 notes", level: "JSS 3" },
+      { label: "SS 1 notes", level: "SS 1" },
+      { label: "SS 2 notes", level: "SS 2" },
+      { label: "SS 3 notes", level: "SS 3" },
+      { label: "Schemes of work", section: "schemes" },
+      { label: "Lesson plans", section: "lessonplans" },
+    ],
+  },
   { key: "cbt", label: "CBT Practice" },
   { key: "courses", label: "Online Courses" },
-  { key: "school", label: "School Resources" },
+  {
+    key: "school",
+    label: "School Resources",
+    children: [
+      { label: "Overview", section: "school" },
+      { label: "Timetables", section: "timetables" },
+      { label: "Schemes of work", section: "schemes" },
+      { label: "School management", section: "management" },
+    ],
+  },
   { key: "seller", label: "Become a Seller" },
   { key: "news", label: "News" },
-];
-
-const SECTIONS = {
+];const SECTIONS = {
   student: {
+    parent: "student",
     title: "Student Resources",
     blurb: "Study guides, revision notes and past questions for JSS 1 – SS 3 students.",
   },
@@ -37,12 +68,43 @@ const SECTIONS = {
     blurb: "Learn at your own pace with structured video courses, anytime and anywhere.",
   },
   school: {
+    parent: "school",
     title: "School Resources",
     blurb: "Tools and materials for schools: timetables, schemes of work, and school management.",
   },
   seller: {
     title: "Become a Seller",
     blurb: "Teachers and creators can sell study materials and courses to learners across Nigeria.",
+  },
+  pastquestions: {
+    parent: "student",
+    title: "Past Questions",
+    blurb: "Past JAMB, WAEC and NECO questions with answers, arranged by subject and year.",
+  },
+  studyguides: {
+    parent: "student",
+    title: "Study Guides",
+    blurb: "Short, clear guides that help students revise a topic quickly.",
+  },
+  schemes: {
+    parent: "teachers",
+    title: "Schemes of Work",
+    blurb: "Termly schemes of work for JSS 1 – SS 3, ready to adapt for your school.",
+  },
+  lessonplans: {
+    parent: "teachers",
+    title: "Lesson Plans",
+    blurb: "Ready-to-use weekly lesson plans for every class and subject.",
+  },
+  timetables: {
+    parent: "school",
+    title: "Timetables",
+    blurb: "Timetable templates and tools for planning the school week.",
+  },
+  management: {
+    parent: "school",
+    title: "School Management",
+    blurb: "Tools for admissions, records, fees and reporting.",
   },
 };
 
@@ -225,15 +287,14 @@ function App() {
     view === "catalog"
       ? "home"
       : view === "collection"
-        ? "teachers"
+        ? collectionParent
         : view === "section"
-          ? section
+          ? SECTIONS[section]?.parent || section
           : view === "news"
             ? "news"
             : view === "library"
               ? "library"
               : null;
-
   function saveSession(data) {
     localStorage.setItem("article_token", data.token);
     localStorage.setItem("article_user", JSON.stringify(data.user));
@@ -274,7 +335,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
+           <header className="topbar">
         <button className="brand" onClick={goCatalog}>
           <span className="brand-mark">B</span>
           <span>
@@ -283,22 +344,36 @@ function App() {
             <small>ACADEMY</small>
           </span>
         </button>
+
         <nav>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.key}
-              className={activeKey === item.key ? "active" : ""}
-              onClick={() => navigate(item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
+          {NAV_ITEMS.map((item) =>
+            item.children ? (
+              <button
+                key={item.key}
+                className={`nav-parent${activeKey === item.key ? " active" : ""}${openMenu === item.key ? " open" : ""}`}
+                aria-haspopup="true"
+                aria-expanded={openMenu === item.key}
+                onClick={(event) => toggleMenu(event, item.key)}
+              >
+                {item.label} <span className="caret">▾</span>
+              </button>
+            ) : (
+              <button
+                key={item.key}
+                className={activeKey === item.key ? "active" : ""}
+                onClick={() => navigate(item.key)}
+              >
+                {item.label}
+              </button>
+            ),
+          )}
           {user && (
             <button className={view === "library" ? "active" : ""} onClick={() => navigate("library")}>
               My library
             </button>
           )}
         </nav>
+
         <div className="top-actions">
           <button className="search-button" onClick={focusSearch}>
             ⌕ <span>Search</span>
@@ -313,8 +388,17 @@ function App() {
             </button>
           )}
         </div>
-      </header>
 
+        {openItem && (
+          <div className="nav-dropdown" style={{ left: menuX }} role="menu">
+            {openItem.children.map((child) => (
+              <button key={child.label} role="menuitem" onClick={() => openChild(openItem.key, child)}>
+                {child.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
       {notice && (
         <div className="notice">
           {notice}
