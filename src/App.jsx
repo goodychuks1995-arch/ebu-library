@@ -8,12 +8,6 @@ const FOOTER_DOCS = [
   ["Terms and Condition", "/TERMS AND CONDITIONS.docx.pdf"],
 ];
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
-const PORTAL_URLS = {
-  jamb: import.meta.env.VITE_JAMB_URL || "",
-  waec: import.meta.env.VITE_WAEC_URL || "",
-  neco: import.meta.env.VITE_NECO_URL || "",
-};
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
  const NAV_ITEMS = [
@@ -244,6 +238,7 @@ function App() {
   const [selectedLevel, setSelectedLevel] = useState("ALL CLASSES");
   const [notice, setNotice] = useState("");
   const [showReturnToTop, setShowReturnToTop] = useState(false);
+  const [manualFor, setManualFor] = useState(null);
 
     const [openMenu, setOpenMenu] = useState(null);
   const [menuX, setMenuX] = useState(0);
@@ -251,7 +246,6 @@ function App() {
 
   useEffect(() => {
     if (user) api("/articles").then(setArticles).catch((error) => setNotice(error.message));
-    if (new URLSearchParams(window.location.search).has("reference")) setView("callback");
   }, [user]);
     useEffect(() => {
     const onExpired = () => {
@@ -279,9 +273,9 @@ function App() {
       document.removeEventListener("keydown", onKey);
     };
   }, [openMenu]);
-  useEffect(() => {
-    if (user) api("/purchases").then(setPurchases).catch(() => {});
-  }, [user]);
+ useEffect(() => {
+  if (user) api("/purchases").then(setPurchases).catch(() => {});
+}, [user, view]);
   useEffect(() => {
     const handleScroll = () => setShowReturnToTop(window.scrollY > 400);
     handleScroll();
@@ -386,18 +380,7 @@ function App() {
       setNotice(error.message);
     }
   }
-  async function buy(article) {
-    if (!user) return setModal("login");
-    try {
-      const result = await api("/payments/initialize", {
-        method: "POST",
-        body: JSON.stringify({ articleId: article.id }),
-      });
-      window.location.href = result.authorization_url;
-    } catch (error) {
-      setNotice(error.message);
-    }
-  }
+
   function logout() {
     localStorage.removeItem("article_token");
     localStorage.removeItem("article_user");
@@ -595,15 +578,15 @@ function App() {
         </main>
       )}
       {view === "collection" && selected && (
-        <ArticleDetail
-          article={selected}
-          onBack={() => setSelected(null)}
-          onBuy={() => buy(selected)}
-          onDownload={() => downloadFile(selected.id).catch((error) => setNotice(error.message))}
-          onRead={getViewUrl}
-          owned={owned(selected.id)}
-        />
-      )}
+  <ArticleDetail
+    article={selected}
+    onBack={() => setSelected(null)}
+    onManualPay={() => (user ? setManualFor(selected) : setModal("login"))}
+    onDownload={() => downloadFile(selected.id).catch((error) => setNotice(error.message))}
+    onRead={getViewUrl}
+    owned={owned(selected.id)}
+  />
+)}
       {view === "library" && (
         <Library
           purchases={purchases}
@@ -612,15 +595,6 @@ function App() {
       )}
       {view === "news" && (
         <News items={news} isAdmin={user?.role === "admin"} onChange={setNews} setNotice={setNotice} />
-      )}
-      {view === "callback" && (
-        <Callback
-          onDone={() => {
-            setView("library");
-            window.history.replaceState({}, "", "/");
-          }}
-          onError={setNotice}
-        />
       )}
 
       <footer>
@@ -644,6 +618,9 @@ function App() {
           ↑ <span>Return to top</span>
         </button>
       )}
+      {manualFor && (
+  <ManualPayModal article={manualFor} onClose={() => setManualFor(null)} setNotice={setNotice} />
+)}
       {modal && (
         <AuthModal
           mode={modal}
@@ -655,7 +632,65 @@ function App() {
     </div>
   );
 }
+const BANK = { bank: "Opay", name: "Nwaokeafor Chukwuebuka Goodluck", number: "9022019744" };
 
+function ManualPayModal({ article, onClose, setNotice }) {
+  const [file, setFile] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!file) return;
+    setBusy(true);
+    try {
+      const data = new FormData();
+      data.append("articleId", article.id);
+      data.append("proof", file);
+      await api("/payments/manual", { method: "POST", body: data });
+      setDone(true);
+    } catch (error) {
+      setNotice(error.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop">
+      <form className="auth-modal" onSubmit={submit}>
+        <button type="button" className="close" onClick={onClose}>×</button>
+        <p className="eyebrow">PAY BY BANK TRANSFER</p>
+        {done ? (
+          <>
+            <h2>Proof received.</h2>
+            <p>We'll confirm your payment and unlock "{article.title}" in My library. This can take a few hours.</p>
+            <button type="button" className="button button-dark" onClick={onClose}>Close</button>
+          </>
+        ) : (
+          <>
+            <h2>{article.title}</h2>
+            <p>Transfer exactly <strong>{money(article.price_kobo)}</strong> to:</p>
+            <p><strong>{BANK.bank}</strong><br />{BANK.name}<br />{BANK.number}</p>
+            <p>In the transfer narration, write the email you signed up with.</p>
+            <label>
+              Upload proof of payment (JPG, PNG or PDF, max 5 MB)
+              <input
+                required
+                type="file"
+                accept="image/jpeg,image/png,application/pdf"
+                onChange={(e) => setFile(e.target.files[0] || null)}
+              />
+            </label>
+            <button className="button button-dark" disabled={busy}>
+              {busy ? "Uploading..." : "Submit proof"} ↗
+            </button>
+          </>
+        )}
+      </form>
+    </div>
+  );
+}
 function SectionPage({ title, blurb, cta, onBrowse, onHome }) {
   return (
     <main className="section-page">
@@ -699,7 +734,7 @@ function ArticleCard({ article, index, onOpen }) {
   );
 }
 
-function ArticleDetail({ article, onBack, onBuy, onDownload, onRead, owned }) {
+function ArticleDetail({ article, onBack, onManualPay, onDownload, onRead, owned }) {
   const [readerUrl, setReaderUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -751,7 +786,11 @@ function ArticleDetail({ article, onBack, onBuy, onDownload, onRead, owned }) {
               </button>
             </div>
           ) : (
-            <button className="button button-dark" onClick={onBuy}>
+         ) : (
+        <button className="button button-dark" onClick={onManualPay}>
+        {`Buy · ${money(article.price_kobo)} · Pay by bank transfer`} <span>↗</span>
+      </button>
+    )}
               {`Get the note · ${money(article.price_kobo)}`} <span>↗</span>
             </button>
           )}
@@ -1062,28 +1101,6 @@ function News({ items, isAdmin, onChange, setNotice }) {
       ) : (
         <div className="empty">No news yet. Check back soon.</div>
       )}
-    </main>
-  );
-}
-
-function Callback({ onDone, onError }) {
-  useEffect(() => {
-    const reference = new URLSearchParams(window.location.search).get("reference");
-    if (reference)
-      api(`/payments/verify/${reference}`)
-        .then(onDone)
-        .catch((error) => onError(error.message));
-  }, [onDone, onError]);
-  return (
-    <main className="callback">
-      <div className="loader" />
-      <p className="eyebrow">PAYMENT RECEIVED</p>
-      <h1>
-        Making room
-        <br />
-        <em>in your library.</em>
-      </h1>
-      <p>We’re confirming your purchase now.</p>
     </main>
   );
 }
