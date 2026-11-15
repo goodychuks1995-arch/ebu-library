@@ -776,7 +776,7 @@ function ArticleDetail({ article, onBack, onManualPay, onDownload, onRead, owned
           <p className="preview">
             {article.preview_text || "Read, reflect, and return to the ideas that stay with you."}
           </p>
-          {canAccess ? (
+                    {canAccess ? (
             <div className="detail-actions">
               <button className="button button-accent" onClick={openReader} disabled={busy}>
                 {busy ? "Opening..." : "Read online"} <span>↗</span>
@@ -786,12 +786,8 @@ function ArticleDetail({ article, onBack, onManualPay, onDownload, onRead, owned
               </button>
             </div>
           ) : (
-         ) : (
-        <button className="button button-dark" onClick={onManualPay}>
-        {`Buy · ${money(article.price_kobo)} · Pay by bank transfer`} <span>↗</span>
-      </button>
-    )}
-              {`Get the note · ${money(article.price_kobo)}`} <span>↗</span>
+             <button className="button button-dark" onClick={onManualPay}>
+              {`Buy · ${money(article.price_kobo)} · Pay by bank transfer`} <span>↗</span>
             </button>
           )}
           {error && <p className="reader-error">{error}</p>}
