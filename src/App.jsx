@@ -199,6 +199,10 @@ function App() {
   const [notice, setNotice] = useState("");
   const [showReturnToTop, setShowReturnToTop] = useState(false);
 
+    const [openMenu, setOpenMenu] = useState(null);
+  const [menuX, setMenuX] = useState(0);
+  const [collectionParent, setCollectionParent] = useState("teachers");
+
   useEffect(() => {
     if (user) api("/articles").then(setArticles).catch((error) => setNotice(error.message));
     if (new URLSearchParams(window.location.search).has("reference")) setView("callback");
@@ -218,6 +222,17 @@ function App() {
   useEffect(() => {
     if (view === "news") api("/news").then(setNews).catch((error) => setNotice(error.message));
   }, [view]);
+    useEffect(() => {
+    if (!openMenu) return;
+    const close = () => setOpenMenu(null);
+    const onKey = (event) => event.key === "Escape" && close();
+    document.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [openMenu]);
   useEffect(() => {
     if (user) api("/purchases").then(setPurchases).catch(() => {});
   }, [user]);
@@ -282,7 +297,24 @@ function App() {
       setView("section");
     }
   }
+  function toggleMenu(event, key) {
+    event.stopPropagation();
+    if (openMenu === key) return setOpenMenu(null);
+    const rect = event.currentTarget.getBoundingClientRect();
+    const half = Math.min(340, window.innerWidth - 24) / 2;
+    const center = rect.left + rect.width / 2;
+    setMenuX(Math.min(Math.max(center, half + 12), window.innerWidth - half - 12));
+    setOpenMenu(key);
+  }
 
+  function openChild(parentKey, child) {
+    setOpenMenu(null);
+    setCollectionParent(parentKey);
+    if (child.section) return navigate(child.section);
+    browseCollection(child.level);
+  }
+
+  const openItem = NAV_ITEMS.find((item) => item.key === openMenu);
   const activeKey =
     view === "catalog"
       ? "home"
