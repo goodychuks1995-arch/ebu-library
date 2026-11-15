@@ -21,6 +21,7 @@ const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}
       { label: "Past questions & answers", section: "pastquestions" },
       { label: "Textbooks & study guides", section: "studyguides" },
       { label: "Scholarship opportunities", section: "scholarships" },
+      { label: "CBT", section: "CBT" },
     ],
   },
   {
@@ -85,6 +86,11 @@ const SECTIONS = {
     parent: "student",
     title: "Past Questions & Answers",
     blurb: "Past JAMB, WAEC and NECO questions with worked answers, arranged by subject and year.",
+  },
+   pastquestions: {
+    parent: "CBT",
+    title: "Practice",
+    blurb: "Past JAMB, WAEC and NECO questions with worked answers.",
   },
  studyguides: {
     parent: "student",
