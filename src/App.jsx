@@ -9,6 +9,11 @@ const FOOTER_DOCS = [
 ];
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const CBT_URL = import.meta.env.VITE_CBT_URL || ""; // set when your CBT portal is live
+const PORTAL_URLS = {
+  jamb: import.meta.env.VITE_JAMB_URL || "",
+  waec: import.meta.env.VITE_WAEC_URL || "",
+  neco: import.meta.env.VITE_NECO_URL || "",
+};
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
  const NAV_ITEMS = [
