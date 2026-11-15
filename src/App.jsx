@@ -618,8 +618,18 @@ function App() {
           ↑ <span>Return to top</span>
         </button>
       )}
-      {manualFor && (
-  <ManualPayModal article={manualFor} onClose={() => setManualFor(null)} setNotice={setNotice} />
+   {manualFor && (
+  <ManualPayModal
+    article={manualFor}
+    onClose={() => setManualFor(null)}
+    onDone={() => {
+      setManualFor(null);
+      setSelected(null);
+      setNotice("Proof received. We'll unlock it in My library once your payment is confirmed.");
+      window.scrollTo({ top: 0 });
+    }}
+    setNotice={setNotice}
+  />
 )}
       {modal && (
         <AuthModal
@@ -634,7 +644,7 @@ function App() {
 }
 const BANK = { bank: "Opay", name: "Nwaokeafor Chukwuebuka Goodluck", number: "9022019744" };
 
-function ManualPayModal({ article, onClose, setNotice }) {
+function ManualPayModal({ article, onClose, onDone, setNotice }) {
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
@@ -656,18 +666,20 @@ function ManualPayModal({ article, onClose, setNotice }) {
     }
   }
 
-  return (
-       <div className="modal-backdrop" onClick={onClose}>
+     return (
+    <div className="modal-backdrop" onClick={done ? onDone : onClose}>
       <form className="auth-modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <button type="button" className="close" onClick={onClose}>×
+        <button type="button" className="close" onClick={done ? onDone : onClose}>
+          ×
         </button>
         <p className="eyebrow">PAY BY BANK TRANSFER</p>
         {done ? (
           <>
             <h2>Proof received.</h2>
             <p>We'll confirm your payment and unlock "{article.title}" in My library. This can take a few hours.</p>
-            <p>for quick response upload  your proof and your email on whatsapp</p>
-            <button type="button" className="button button-dark" onClick={onClose}>Close</button>
+            <button type="button" className="button button-dark" onClick={onDone}>
+              Back to collection
+            </button>
           </>
         ) : (
           <>
@@ -856,9 +868,10 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
   return (
-    <div className="modal-backdrop">
-      <form
+        <div className="modal-backdrop" onClick={onClose}>
+           <form
         className="auth-modal"
+        onClick={(e) => e.stopPropagation()}
         onSubmit={(event) => {
           event.preventDefault();
           onSubmit(form, mode === "login" ? "login" : "signup");
