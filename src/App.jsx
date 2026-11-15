@@ -657,14 +657,16 @@ function ManualPayModal({ article, onClose, setNotice }) {
   }
 
   return (
-    <div className="modal-backdrop">
-      <form className="auth-modal" onSubmit={submit}>
-        <button type="button" className="close" onClick={onClose}>×</button>
+       <div className="modal-backdrop" onClick={onClose}>
+      <form className="auth-modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
+        <button type="button" className="close" onClick={onClose}>×
+        </button>
         <p className="eyebrow">PAY BY BANK TRANSFER</p>
         {done ? (
           <>
             <h2>Proof received.</h2>
             <p>We'll confirm your payment and unlock "{article.title}" in My library. This can take a few hours.</p>
+            <p>for quick response upload  your proof and your email on whatsapp</p>
             <button type="button" className="button button-dark" onClick={onClose}>Close</button>
           </>
         ) : (
@@ -684,6 +686,9 @@ function ManualPayModal({ article, onClose, setNotice }) {
             </label>
             <button className="button button-dark" disabled={busy}>
               {busy ? "Uploading..." : "Submit proof"} ↗
+            </button>
+            <button type="button" className="text-button" onClick={onClose}>
+              Cancel
             </button>
           </>
         )}
@@ -881,6 +886,9 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
         <button className="button button-dark">{mode === "login" ? "Sign in" : "Create account"} ↗</button>
         <button type="button" className="text-button" onClick={onSwitch}>
           {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
+        </button>
+                <button type="button" className="text-button" onClick={onClose}>
+          Cancel
         </button>
       </form>
     </div>
