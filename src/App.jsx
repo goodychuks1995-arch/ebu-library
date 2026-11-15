@@ -19,11 +19,12 @@ const NAV_ITEMS = [
     label: "Student Resources",
     children: [
       { label: "Lessons Notes", level: "ALL CLASSES" },
-      { label: "Past Questions", section: "Past Question" },
+      { label: "Past Questions", section: "pastquestions" },
       { label: "Assigment & Excercise", section: "Assigment" },
       { label: "Schoolarship Opportunities", section: "Schoolarship" },
       { label: "Admission Resources", section: "Admission" },
       { label: "Educational tools", section: "Edu tools" },
+      { label: "study Guides", section:  "studyguides" },
     ],
   },
   {
@@ -65,17 +66,9 @@ const NAV_ITEMS = [
   student: {
     parent: "student",
     title: "Student Resources",
-    blurb: "Study guides, revision notes and past questions for JSS 1 – SS 3 students.",
+    blurb: "Past Question: revision notes and past questions for JSS 1 – SS 3 students.",
   },
-  cbt: {
-    title: "CBT Practice",
-    blurb: "Practise JAMB, WAEC and NECO style questions in a real computer-based test setting.",
-    cta: CBT_URL ? { label: "Start practising", href: CBT_URL } : null,
-  },
-  courses: {
-    title: "Online Courses",
-    blurb: "Learn at your own pace with structured video courses, anytime and anywhere.",
-  },
+  
   school: {
     parent: "school",
     title: "School Resources",
