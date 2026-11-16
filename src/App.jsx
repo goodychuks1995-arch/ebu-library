@@ -427,10 +427,15 @@ function App() {
                 {item.label}
               </button>
             ),
-          )}
+          )}      
           {user && (
             <button className={view === "library" ? "active" : ""} onClick={() => navigate("library")}>
               My library
+            </button>
+          )}
+          {user?.role === "admin" && (
+            <button className={view === "adminpayments" ? "active" : ""} onClick={() => setView("adminpayments")}>
+              Payments
             </button>
           )}
         </nav>
@@ -593,6 +598,7 @@ function App() {
           onDownload={(id) => downloadFile(id).catch((error) => setNotice(error.message))}
         />
       )}
+      {view === "adminpayments" && user?.role === "admin" && <AdminPayments setNotice={setNotice} />}
       {view === "news" && (
         <News items={news} isAdmin={user?.role === "admin"} onChange={setNews} setNotice={setNotice} />
       )}
@@ -708,6 +714,74 @@ function ManualPayModal({ article, onClose, onDone, setNotice }) {
     </div>
   );
 }
+
+function AdminPayments({ setNotice }) {
+  const [rows, setRows] = useState([]);
+  const [busyId, setBusyId] = useState(null);
+
+  const load = () =>
+    api("/payments/admin/manual")
+      .then(setRows)
+      .catch((e) => setNotice(e.message));
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function act(id, action) {
+    if (action === "reject" && !window.confirm("Reject this payment?")) return;
+    setBusyId(id);
+    try {
+      await api(`/payments/admin/manual/${id}/${action}`, { method: "POST", body: JSON.stringify({}) });
+      setNotice(action === "approve" ? "Approved. Article unlocked." : "Rejected.");
+      load();
+    } catch (e) {
+      setNotice(e.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <main className="library">
+      <p className="eyebrow">ADMIN</p>
+      <h1>
+        Pending <em>payments.</em>
+      </h1>
+      <div className="library-list">
+        {rows.length ? (
+          rows.map((r) => (
+            <div className="library-item" key={r.id}>
+              <div>
+                <h3>{r.article_title}</h3>
+                <p>
+                  {r.user_name} · {r.user_email}
+                </p>
+                <p>
+                  {money(r.amount_kobo)} · {r.reference}
+                </p>
+                <a href={r.proof_url} target="_blank" rel="noopener noreferrer">
+                  View proof ↗
+                </a>
+              </div>
+              <div>
+                <button className="button button-dark" disabled={busyId === r.id} onClick={() => act(r.id, "approve")}>
+                  Approve
+                </button>{" "}
+                <button className="button button-outline" disabled={busyId === r.id} onClick={() => act(r.id, "reject")}>
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="empty">No pending payments.</div>
+        )}
+      </div>
+    </main>
+  );
+}
+
 function SectionPage({ title, blurb, cta, onBrowse, onHome }) {
   return (
     <main className="section-page">
