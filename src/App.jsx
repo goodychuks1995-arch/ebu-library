@@ -17,7 +17,6 @@ const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}
     label: "Student Resources",
     children: [
       { label: "Lesson notes", level: "ALL CLASSES" },
-      { label: "Past questions & answers", section: "pastquestions" },
       { label: "Textbooks & study guides", section: "studyguides" },
       { label: "Scholarship opportunities", section: "scholarships" },
       { label: "CBT", section: "CBT" },
@@ -58,7 +57,7 @@ const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}
       { label: "Universities & courses", section: "universities" },
       { label: "Polytechnics & colleges of education", section: "polytechnics" },
       { label: "Requirements & cut-off marks", section: "cutoffs" },
-      { label: "Admission news", section: "news" },
+       { label: "Past questions & answers", section: "pastquestions" },
     ],
   },
   { key: "seller", label: "Become a Seller" },
@@ -82,7 +81,7 @@ const SECTIONS = {
     blurb: "Teachers and creators can sell study materials and courses to learners across Nigeria.",
   },
  pastquestions: {
-    parent: "student",
+    parent: "admissions",
     title: "Past Questions & Answers",
     blurb: "Past JAMB, WAEC and NECO questions with worked answers, arranged by subject and year.",
   },
