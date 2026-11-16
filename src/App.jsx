@@ -433,6 +433,17 @@ function App() {
               My library
             </button>
           )}
+          {user && (
+  <button
+    className={view === "requests" ? "active" : ""}
+    onClick={() => {
+      setSelected(null);
+      setView("requests");
+    }}
+  >
+    My payments
+  </button>
+)}
           {user?.role === "admin" && (
             <button className={view === "adminpayments" ? "active" : ""} onClick={() => setView("adminpayments")}>
               Payments
@@ -599,6 +610,7 @@ function App() {
         />
       )}
       {view === "adminpayments" && user?.role === "admin" && <AdminPayments setNotice={setNotice} />}
+       {view === "requests" && user && <MyRequests articles={articles} setNotice={setNotice} />}
       {view === "news" && (
         <News items={news} isAdmin={user?.role === "admin"} onChange={setNews} setNotice={setNotice} />
       )}
@@ -631,6 +643,7 @@ function App() {
     onDone={() => {
       setManualFor(null);
       setSelected(null);
+      setView("requests");
       setNotice("Proof received. We'll unlock it in My library once your payment is confirmed.");
       window.scrollTo({ top: 0 });
     }}
@@ -714,7 +727,58 @@ function ManualPayModal({ article, onClose, onDone, setNotice }) {
     </div>
   );
 }
+function MyRequests({ articles, setNotice }) {
+  const [rows, setRows] = useState(null);
 
+  useEffect(() => {
+    api("/payments/manual/mine")
+      .then(setRows)
+      .catch((e) => {
+        setNotice(e.message);
+        setRows([]);
+      });
+  }, []);
+
+  const titleOf = (id) => articles.find((a) => String(a.id) === String(id))?.title || "Article";
+  const label = {
+    pending: "Awaiting confirmation",
+    approved: "Approved · in My library",
+    rejected: "Rejected",
+  };
+  const when = (d) =>
+    new Date(d).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+
+  return (
+    <main className="library">
+      <p className="eyebrow">YOUR PAYMENTS</p>
+      <h1>
+        My <em>payments.</em>
+      </h1>
+      <p className="subhead">Proofs you've sent and where they stand.</p>
+      <div className="library-list">
+        {rows === null ? (
+          <div className="empty">Loading...</div>
+        ) : rows.length ? (
+          rows.map((r) => (
+            <div className="library-item" key={r.id}>
+              <div>
+                <p className={`status-badge status-${r.status}`}>{label[r.status] || r.status}</p>
+                <h3>{titleOf(r.article_id)}</h3>
+                <p>
+                  {r.reference} · {when(r.created_at)}
+                </p>
+                {r.status === "rejected" && r.note && <p>Reason: {r.note}</p>}
+                {r.status === "rejected" && <p>You can submit a new proof from the article page.</p>}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="empty">You haven't submitted any payment proof yet.</div>
+        )}
+      </div>
+    </main>
+  );
+}
 function AdminPayments({ setNotice }) {
   const [rows, setRows] = useState([]);
   const [busyId, setBusyId] = useState(null);
