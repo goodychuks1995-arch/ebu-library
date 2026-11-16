@@ -9,6 +9,7 @@ const FOOTER_DOCS = [
 ];
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
+const TERMS = ["ALL TERMS", "FIRST TERM", "SECOND TERM", "THIRD TERM"];
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
  const NAV_ITEMS = [
   { key: "home", label: "Home" },
@@ -147,6 +148,12 @@ const SECTIONS = {
   },
 };
 
+function getArticleTerm(article = {}) {
+  const [first = ""] = (article.file_path || "").split("/");
+  const match = first.trim().match(/^(FIRST|SECOND|THIRD)\s*TERM$/i);
+  return match ? `${match[1].toUpperCase()} TERM` : "General";
+}
+
 function getArticleLevel(article = {}) {
   const [level] = (article.description || "").split(" - ");
   const match = (level || "").trim().match(/^(JSS|SS)\s*([123])$/i);
@@ -238,6 +245,7 @@ function App() {
   const [notice, setNotice] = useState("");
   const [showReturnToTop, setShowReturnToTop] = useState(false);
   const [manualFor, setManualFor] = useState(null);
+  const [selectedTerm, setSelectedTerm] = useState("ALL TERMS");
 
     const [openMenu, setOpenMenu] = useState(null);
   const [menuX, setMenuX] = useState(0);
@@ -281,9 +289,12 @@ function App() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-  const filteredArticles = articles.filter((article) =>
+  const filteredArticles = articles
+  .filter((article) =>
     `${article.title} ${article.description || ""}`.toLowerCase().includes(search.toLowerCase()),
-  );
+  )
+  .filter((article) => selectedTerm === "ALL TERMS" || getArticleTerm(article) === selectedTerm);
+  
   const visibleArticles =
     selectedLevel === "ALL CLASSES"
       ? filteredArticles
@@ -540,6 +551,18 @@ function App() {
                 placeholder="Search notes..."
               />
             </div>
+          </div>
+                    <div className="class-filter" aria-label="Term filter">
+            {TERMS.map((term) => (
+              <button
+                key={term}
+                type="button"
+                className={selectedTerm === term ? "active" : ""}
+                onClick={() => setSelectedTerm(term)}
+              >
+                {term}
+              </button>
+            ))}
           </div>
           <div className="class-filter" aria-label="Class filter">
             {LEVELS.map((level) => (
@@ -879,7 +902,10 @@ function ArticleCard({ article, index, onOpen }) {
       </div>
       <div className="card-content">
         <div>
-          <p className="card-kicker">{article.is_premium ? "PREMIUM NOTE" : "OPEN ACCESS"}</p>
+          <p className="card-kicker">
+  {getArticleTerm(article) !== "General" && `${getArticleTerm(article)} · `}
+  {article.is_premium ? "PREMIUM NOTE" : "OPEN ACCESS"}
+</p>
           <h3>{article.title}</h3>
         </div>
         <strong>{money(article.price_kobo)}</strong>
