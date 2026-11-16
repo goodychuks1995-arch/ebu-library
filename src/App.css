@@ -2019,3 +2019,4 @@ footer {
 .status-pending { background: rgba(245, 180, 0, 0.18); color: #f5b400; }
 .status-approved { background: rgba(40, 190, 110, 0.18); color: #28be6e; }
 .status-rejected { background: rgba(235, 70, 70, 0.18); color: #eb4646; }
+.class-filter + .class-filter { margin-top: 10px; }
