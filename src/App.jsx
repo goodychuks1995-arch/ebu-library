@@ -223,6 +223,15 @@ async function getViewUrl(articleId) {
   const data = await api(`/downloads/${articleId}/view`);
   return data.url;
 }
+const NAV_KEY = "bt_nav";
+
+function loadNav() {
+  try {
+    return JSON.parse(sessionStorage.getItem(NAV_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
 
 function App() {
   const [articles, setArticles] = useState([]);
@@ -235,18 +244,19 @@ function App() {
     }
     return JSON.parse(localStorage.getItem("article_user") || "null");
   });
-  const [view, setView] = useState("catalog");
-  const [section, setSection] = useState(null);
+   const saved = loadNav();
+  const [view, setView] = useState(saved.view || "catalog");
+  const [section, setSection] = useState(saved.section || null);
   const [selected, setSelected] = useState(null);
+  const [selectedId, setSelectedId] = useState(saved.selectedId || null);
   const [modal, setModal] = useState(null);
   const [purchases, setPurchases] = useState([]);
   const [search, setSearch] = useState("");
-  const [selectedLevel, setSelectedLevel] = useState("ALL CLASSES");
+  const [selectedLevel, setSelectedLevel] = useState(saved.level || "ALL CLASSES");
   const [notice, setNotice] = useState("");
   const [showReturnToTop, setShowReturnToTop] = useState(false);
   const [manualFor, setManualFor] = useState(null);
-  const [selectedTerm, setSelectedTerm] = useState("ALL TERMS");
-
+  const [selectedTerm, setSelectedTerm] = useState(saved.term || "ALL TERMS");
     const [openMenu, setOpenMenu] = useState(null);
   const [menuX, setMenuX] = useState(0);
   const [collectionParent, setCollectionParent] = useState("teachers");
@@ -280,9 +290,32 @@ function App() {
       document.removeEventListener("keydown", onKey);
     };
   }, [openMenu]);
- useEffect(() => {
-  if (user) api("/purchases").then(setPurchases).catch(() => {});
-}, [user, view]);
+   useEffect(() => {
+    if (user) api("/purchases").then(setPurchases).catch(() => {});
+  }, [user, view]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        NAV_KEY,
+        JSON.stringify({
+          view,
+          section,
+          level: selectedLevel,
+          term: selectedTerm,
+          selectedId: selected ? selected.id : null,
+        }),
+      );
+    } catch {}
+  }, [view, section, selectedLevel, selectedTerm, selected]);
+
+  useEffect(() => {
+    if (!selectedId || selected || !articles.length) return;
+    const found = articles.find((a) => String(a.id) === String(selectedId));
+    if (found) setSelected(found);
+    setSelectedId(null);
+  }, [articles, selectedId, selected]);
+
   useEffect(() => {
     const handleScroll = () => setShowReturnToTop(window.scrollY > 400);
     handleScroll();
@@ -394,6 +427,7 @@ function App() {
   function logout() {
     localStorage.removeItem("article_token");
     localStorage.removeItem("article_user");
+    sessionStorage.removeItem(NAV_KEY);
     setUser(null);
     setPurchases([]);
     goCatalog();
