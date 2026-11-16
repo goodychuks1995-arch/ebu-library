@@ -2007,3 +2007,15 @@ footer {
   .auth-modal { padding: 56px 20px 24px; }
   .auth-modal h2 { font-size: 1.6rem; line-height: 1.15; padding-right: 36px; }
 }
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0 0 8px;
+}
+.status-pending { background: rgba(245, 180, 0, 0.18); color: #f5b400; }
+.status-approved { background: rgba(40, 190, 110, 0.18); color: #28be6e; }
+.status-rejected { background: rgba(235, 70, 70, 0.18); color: #eb4646; }
