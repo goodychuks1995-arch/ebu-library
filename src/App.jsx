@@ -197,42 +197,35 @@ function tokenExpired(token) {
   }
 }
 
+let pendingRequests = 0;
+const loadingListeners = new Set();
+const trackRequests = (change) => {
+  pendingRequests += change;
+  loadingListeners.forEach((listener) => listener(pendingRequests));
+};
+
 async function api(path, options = {}) {
-  const token = localStorage.getItem("article_token");
-  const headers = {
-    ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
-    ...options.headers,
-  };
-  if (token) headers.Authorization = `Bearer ${token}`;
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
-  const data = await response.json().catch(() => ({}));
-  if (response.status === 401 && token && !path.startsWith("/auth/")) {
-    localStorage.removeItem("article_token");
-    localStorage.removeItem("article_user");
-    window.dispatchEvent(new Event("session-expired"));
-  }
-  if (!response.ok) throw new Error(data.error || data.message || "Something went wrong");
-  return data;
-}
-async function downloadFile(articleId) {
-  const data = await api(`/downloads/${articleId}`);
-  window.location.href = data.url;
-}
-
-async function getViewUrl(articleId) {
-  const data = await api(`/downloads/${articleId}/view`);
-  return data.url;
-}
-const NAV_KEY = "bt_nav";
-
-function loadNav() {
+  trackRequests(1);
   try {
-    return JSON.parse(sessionStorage.getItem(NAV_KEY) || "{}");
-  } catch {
-    return {};
+    const token = localStorage.getItem("article_token");
+    const headers = {
+      ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...options.headers,
+    };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(`${API_URL}${path}`, { ...options, headers });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401 && token && !path.startsWith("/auth/")) {
+      localStorage.removeItem("article_token");
+      localStorage.removeItem("article_user");
+      window.dispatchEvent(new Event("session-expired"));
+    }
+    if (!response.ok) throw new Error(data.error || data.message || "Something went wrong");
+    return data;
+  } finally {
+    trackRequests(-1);
   }
 }
-
 function App() {
   const [articles, setArticles] = useState([]);
   const [news, setNews] = useState([]);  const [user, setUser] = useState(() => {
@@ -255,14 +248,26 @@ function App() {
   const [selectedLevel, setSelectedLevel] = useState(saved.level || "ALL CLASSES");
   const [notice, setNotice] = useState("");
   const [showReturnToTop, setShowReturnToTop] = useState(false);
+    const [busyCount, setBusyCount] = useState(0);
+  const [loadingLevel, setLoadingLevel] = useState(0);
+  const [articlesLoading, setArticlesLoading] = useState(false);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [purchasesLoading, setPurchasesLoading] = useState(false);
   const [manualFor, setManualFor] = useState(null);
   const [selectedTerm, setSelectedTerm] = useState(saved.term || "ALL TERMS");
     const [openMenu, setOpenMenu] = useState(null);
   const [menuX, setMenuX] = useState(0);
   const [collectionParent, setCollectionParent] = useState("teachers");
 
-  useEffect(() => {
-    if (user) api("/articles").then(setArticles).catch((error) => setNotice(error.message));
+    useEffect(() => {
+    if (user) {
+      setArticlesLoading(true);
+      api("/articles")
+        .then(setArticles)
+        .catch((error) => setNotice(error.message))
+        .finally(() => setArticlesLoading(false));
+    }
+    if (new URLSearchParams(window.location.search).has("reference")) setView("callback");
   }, [user]);
     useEffect(() => {
     const onExpired = () => {
@@ -276,8 +281,30 @@ function App() {
     window.addEventListener("session-expired", onExpired);
     return () => window.removeEventListener("session-expired", onExpired);
   }, []);
+    useEffect(() => {
+    loadingListeners.add(setBusyCount);
+    return () => loadingListeners.delete(setBusyCount);
+  }, []);
+
   useEffect(() => {
-    if (view === "news") api("/news").then(setNews).catch((error) => setNotice(error.message));
+    if (!busyCount) {
+      setLoadingLevel(0);
+      return;
+    }
+    const showBar = setTimeout(() => setLoadingLevel(1), 250);
+    const showMessage = setTimeout(() => setLoadingLevel(2), 4000);
+    return () => {
+      clearTimeout(showBar);
+      clearTimeout(showMessage);
+    };
+  }, [busyCount > 0]);
+   useEffect(() => {
+    if (view !== "news") return;
+    setNewsLoading(true);
+    api("/news")
+      .then(setNews)
+      .catch((error) => setNotice(error.message))
+      .finally(() => setNewsLoading(false));
   }, [view]);
     useEffect(() => {
     if (!openMenu) return;
@@ -291,8 +318,13 @@ function App() {
     };
   }, [openMenu]);
    useEffect(() => {
-    if (user) api("/purchases").then(setPurchases).catch(() => {});
-  }, [user, view]);
+    if (!user) return;
+    setPurchasesLoading(true);
+    api("/purchases")
+      .then(setPurchases)
+      .catch(() => {})
+      .finally(() => setPurchasesLoading(false));
+  }, [user]);
 
   useEffect(() => {
     try {
@@ -526,7 +558,12 @@ function App() {
           <button onClick={() => setNotice("")}>×</button>
         </div>
       )}
-
+            {loadingLevel >= 1 && <div className="loading-bar" role="progressbar" aria-label="Loading" />}
+      {loadingLevel >= 2 && (
+        <div className="loading-toast" role="status">
+          Still working... The server may be waking up, which can take up to a minute on the first visit.
+        </div>
+      )}
       {view === "catalog" && !selected && (
         <main>
           <section className="hero">
@@ -610,7 +647,9 @@ function App() {
               </button>
             ))}
           </div>
-          {groupedDisplay.length ? (
+               {articlesLoading ? (
+            <Skeletons />
+          ) : groupedDisplay.length ? ( (
             groupedDisplay.map((group) => (
               <div className="level-group" key={group.level} data-level={group.level}>
                 <div className="group-heading">
@@ -660,15 +699,16 @@ function App() {
   />
 )}
       {view === "library" && (
-        <Library
+              <Library
           purchases={purchases}
+          loading={purchasesLoading}
           onDownload={(id) => downloadFile(id).catch((error) => setNotice(error.message))}
         />
       )}
       {view === "adminpayments" && user?.role === "admin" && <AdminPayments setNotice={setNotice} />}
        {view === "requests" && user && <MyRequests articles={articles} setNotice={setNotice} />}
       {view === "news" && (
-        <News items={news} isAdmin={user?.role === "admin"} onChange={setNews} setNotice={setNotice} />
+      <News items={news} loading={newsLoading} isAdmin={user?.role === "admin"} onChange={setNews} setNotice={setNotice} />
       )}
 
       <footer>
@@ -752,9 +792,9 @@ function ManualPayModal({ article, onClose, onDone, setNotice }) {
           <>
             <h2>Proof received.</h2>
             <p>We'll confirm your payment and unlock "{article.title}" in My library. This can take a few hours.</p>
-            <button type="button" className="button button-dark" onClick={onDone}>
-              Back to collection
-            </button>
+                   <button className="button button-dark" disabled={busy}>
+          {busy ? "Please wait..." : `${mode === "login" ? "Sign in" : "Create account"} ↗`}
+        </button>
           </>
         ) : (
           <>
@@ -901,6 +941,15 @@ function AdminPayments({ setNotice }) {
     </main>
   );
 }
+function Skeletons({ count = 6 }) {
+  return (
+    <div className="skeleton-grid" aria-busy="true" aria-label="Loading">
+      {Array.from({ length: count }, (_, i) => (
+        <div className="skeleton-card" key={i} />
+      ))}
+    </div>
+  );
+}
 
 function SectionPage({ title, blurb, cta, onBrowse, onHome }) {
   return (
@@ -1030,7 +1079,7 @@ function ArticleDetail({ article, onBack, onManualPay, onDownload, onRead, owned
   );
 }
 
-function Library({ purchases, onDownload }) {
+function Library({ purchases, loading, onDownload }) {
   return (
     <main className="library">
       <p className="eyebrow">YOUR READING ROOM</p>
@@ -1039,7 +1088,9 @@ function Library({ purchases, onDownload }) {
       </h1>
       <p className="subhead">The ideas you chose to keep.</p>
       <div className="library-list">
-        {purchases.length ? (
+              {loading && !purchases.length ? (
+          <Skeletons count={3} />
+        ) : purchases.length ?  (
           purchases.map((purchase) => (
             <div className="library-item" key={purchase.id}>
               <div className="mini-art">{purchase.title?.slice(0, 1)}</div>
@@ -1063,6 +1114,7 @@ function Library({ purchases, onDownload }) {
 
 function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+    const [busy, setBusy] = useState(false);
   const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
   return (
         <div className="modal-backdrop" onClick={onClose}>
@@ -1175,7 +1227,7 @@ function excerpt(body = "", title = "", max = 200) {
   return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
 }
 
-function News({ items, isAdmin, onChange, setNotice }) {
+function News({ items, loading, isAdmin, onChange, setNotice }) {
   const [form, setForm] = useState({ title: "", body: "", image: null });
   const [fileKey, setFileKey] = useState(0);
   const [openId, setOpenId] = useState(null);
@@ -1268,7 +1320,9 @@ function News({ items, isAdmin, onChange, setNotice }) {
           <button className="button button-dark">Publish ↗</button>
         </form>
       )}
-      {items.length ? (
+           {loading && !items.length ? (
+        <Skeletons count={4} />
+      ) : items.length ?  (
         <>
           {items.slice(0, 1).map((item) => (
             <article className={`news-featured${item.image_url ? "" : " no-img"}`} key={item.id}>
