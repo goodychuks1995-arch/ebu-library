@@ -91,6 +91,10 @@ const SECTIONS = {
     title: "Practice",
     blurb: "Past JAMB, WAEC and NECO questions with worked answers.",
   },
+    courses: {
+    title: "Online Courses",
+    blurb: "Learn at your own pace with structured video courses, anytime and anywhere.",
+  },
  studyguides: {
     parent: "student",
     title: "Textbooks & Study Guides",
@@ -148,18 +152,11 @@ const SECTIONS = {
   },
 };
 
-function getArticleTerm(article = {}) {
-  const [first = ""] = (article.file_path || "").split("/");
-  const match = first.trim().match(/^(FIRST|SECOND|THIRD)\s*TERM$/i);
-  return match ? `${match[1].toUpperCase()} TERM` : "General";
-}
-
 function getArticleLevel(article = {}) {
   const [level] = (article.description || "").split(" - ");
   const match = (level || "").trim().match(/^(JSS|SS)\s*([123])$/i);
   return match ? `${match[1].toUpperCase()} ${match[2]}` : "General";
 }
-
 function getArticleSubject(article = {}) {
   const parts = (article.description || "").split(" - ").map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) return "General";
@@ -226,6 +223,17 @@ async function api(path, options = {}) {
     trackRequests(-1);
   }
 }
+
+async function downloadFile(articleId) {
+  const data = await api(`/downloads/${articleId}`);
+  window.location.href = data.url;
+}
+
+async function getViewUrl(articleId) {
+  const data = await api(`/downloads/${articleId}/view`);
+  return data.url;
+}
+
 function App() {
   const [articles, setArticles] = useState([]);
   const [news, setNews] = useState([]);  const [user, setUser] = useState(() => {
@@ -238,7 +246,8 @@ function App() {
     return JSON.parse(localStorage.getItem("article_user") || "null");
   });
    const saved = loadNav();
-  const [view, setView] = useState(saved.view || "catalog");
+ const restorable = user ? saved.view : ["section", "news"].includes(saved.view) ? saved.view : null;
+const [view, setView] = useState(restorable || "catalog");
   const [section, setSection] = useState(saved.section || null);
   const [selected, setSelected] = useState(null);
   const [selectedId, setSelectedId] = useState(saved.selectedId || null);
@@ -649,7 +658,7 @@ function App() {
           </div>
                {articlesLoading ? (
             <Skeletons />
-          ) : groupedDisplay.length ? ( (
+          ) : groupedDisplay.length ? ( 
             groupedDisplay.map((group) => (
               <div className="level-group" key={group.level} data-level={group.level}>
                 <div className="group-heading">
@@ -747,13 +756,51 @@ function App() {
   />
 )}
       {modal && (
-        <AuthModal
-          mode={modal}
-          onClose={() => setModal(null)}
-          onSubmit={authenticate}
-          onSwitch={() => setModal(modal === "login" ? "signup" : "login")}
-        />
-      )}
+     function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [busy, setBusy] = useState(false);
+  const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <form
+        className="auth-modal"
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={async (event) => {
+          event.preventDefault();
+          setBusy(true);
+          await onSubmit(form, mode === "login" ? "login" : "signup");
+          setBusy(false);
+        }}
+      >
+        <button type="button" className="close" onClick={onClose}>
+          ×
+        </button>
+        <p className="eyebrow">BINARY THINKERS</p>
+        <h2>{mode === "login" ? "Welcome back." : "Make an account."}</h2>
+        {mode === "signup" && (
+          <label>
+            Name
+            <input required value={form.name} onChange={set("name")} />
+          </label>
+        )}
+        <label>
+          Email
+          <input required type="email" value={form.email} onChange={set("email")} />
+        </label>
+        <label>
+          Password
+          <input required type="password" value={form.password} onChange={set("password")} />
+        </label>
+        <button className="button button-dark" disabled={busy}>
+          {busy ? "Please wait..." : `${mode === "login" ? "Sign in" : "Create account"} ↗`}
+        </button>
+        <button type="button" className="text-button" onClick={onSwitch}>
+          {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
+        </button>
+        <button type="button" className="text-button" onClick={onClose}>
+          Cancel
+        </button>
+      </form>
     </div>
   );
 }
@@ -1145,10 +1192,9 @@ function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
           Password
           <input required type="password" value={form.password} onChange={set("password")} />
         </label>
-        <button className="button button-dark">{mode === "login" ? "Sign in" : "Create account"} ↗</button>
-        <button type="button" className="text-button" onClick={onSwitch}>
-          {mode === "login" ? "New here? Create an account" : "Already have an account? Sign in"}
-        </button>
+           <button type="button" className="button button-dark" onClick={onDone}>
+              Done ↗
+            </button>
                 <button type="button" className="text-button" onClick={onClose}>
           Cancel
         </button>
