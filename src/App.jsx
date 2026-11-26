@@ -172,15 +172,25 @@ function getArticleLevel(article = {}) {
 }
 
 function getArticleTerm(article = {}) {
-  const text = [article.title, article.description, article.term, article.category, article.tags]
-    .flat()
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase()
-    .replace(/[_\-.]+/g, " ");
-  if (/\b(first|1st|1)\s*term\b|\bterm\s*(1|one|i)\b|\bt1\b/.test(text)) return "FIRST TERM";
-  if (/\b(second|2nd|2)\s*term\b|\bterm\s*(2|two|ii)\b|\bt2\b/.test(text)) return "SECOND TERM";
-  if (/\b(third|3rd|3)\s*term\b|\bterm\s*(3|three|iii)\b|\bt3\b/.test(text)) return "THIRD TERM";
+  const byNumber = { 1: "FIRST TERM", 2: "SECOND TERM", 3: "THIRD TERM" };
+  const numeric = article.term ?? article.term_number ?? article.term_no ?? article.term_id;
+  if (byNumber[Number(numeric)]) return byNumber[Number(numeric)];
+
+  const skip = new Set(["preview_text", "body", "content"]);
+  const raw = Object.entries(article)
+    .filter(([key]) => !skip.has(key))
+    .flatMap(([, value]) => (Array.isArray(value) ? value : [value]))
+    .filter((value) => typeof value === "string")
+    .join(" ");
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {}
+  const text = decoded.toLowerCase().replace(/[_\-.+]+/g, " ");
+
+  if (/\b(first|1st|1)\s*term\b|\bterm\s*(1|one|i)\b/.test(text)) return "FIRST TERM";
+  if (/\b(second|2nd|2)\s*term\b|\bterm\s*(2|two|ii)\b/.test(text)) return "SECOND TERM";
+  if (/\b(third|3rd|3)\s*term\b|\bterm\s*(3|three|iii)\b/.test(text)) return "THIRD TERM";
   return "General";
 }
 
