@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+
 const FOOTER_DOCS = [
   ["About us", "/About_Us.pdf"],
   ["Contact us", "/Contact_Us.pdf"],
@@ -7,13 +8,18 @@ const FOOTER_DOCS = [
   ["Disclaimer", "/Disclaimer.pdf"],
   ["Terms and Condition", "/TERMS AND CONDITIONS.docx.pdf"],
 ];
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const LEVELS = ["ALL CLASSES", "JSS 1", "JSS 2", "JSS 3", "SS 1", "SS 2", "SS 3"];
 const TERMS = ["ALL TERMS", "FIRST TERM", "SECOND TERM", "THIRD TERM"];
+const NAV_KEY = "bta_nav";
+const BANK = { bank: "Opay", name: "Nwaokeafor Chukwuebuka Goodluck", number: "9022019744" };
+
 const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}`;
- const NAV_ITEMS = [
+
+const NAV_ITEMS = [
   { key: "home", label: "Home" },
-   {
+  {
     key: "student",
     label: "Student Resources",
     children: [
@@ -49,7 +55,7 @@ const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}
       { label: "School management", section: "management" },
     ],
   },
-     {
+  {
     key: "admissions",
     label: "Admission Resources",
     children: [
@@ -58,7 +64,7 @@ const money = (kobo) => `₦${(Number(kobo || 0) / 100).toLocaleString("en-NG")}
       { label: "Universities & courses", section: "universities" },
       { label: "Polytechnics & colleges of education", section: "polytechnics" },
       { label: "Requirements & cut-off marks", section: "cutoffs" },
-       { label: "Past questions & answers", section: "pastquestions" },
+      { label: "Past questions & answers", section: "pastquestions" },
     ],
   },
   { key: "seller", label: "Become a Seller" },
@@ -69,9 +75,8 @@ const SECTIONS = {
   student: {
     parent: "student",
     title: "Student Resources",
-    blurb: "Past Question: revision notes and past questions for JSS 1 – SS 3 students.",
+    blurb: "Revision notes, study guides and past questions for JSS 1 – SS 3 students.",
   },
-  
   school: {
     parent: "school",
     title: "School Resources",
@@ -81,21 +86,21 @@ const SECTIONS = {
     title: "Become a Seller",
     blurb: "Teachers and creators can sell study materials and courses to learners across Nigeria.",
   },
- pastquestions: {
+  pastquestions: {
     parent: "admissions",
     title: "Past Questions & Answers",
     blurb: "Past JAMB, WAEC and NECO questions with worked answers, arranged by subject and year.",
   },
-   CBT: {
-    parent: "CBT",
-    title: "Practice",
-    blurb: "Past JAMB, WAEC and NECO questions with worked answers.",
+  CBT: {
+    parent: "student",
+    title: "CBT Practice",
+    blurb: "Computer-based practice for JAMB, WAEC and NECO exams.",
   },
-    courses: {
+  courses: {
     title: "Online Courses",
     blurb: "Learn at your own pace with structured video courses, anytime and anywhere.",
   },
- studyguides: {
+  studyguides: {
     parent: "student",
     title: "Textbooks & Study Guides",
     blurb: "Recommended textbooks and short, clear study guides to help you revise any topic quickly.",
@@ -105,7 +110,7 @@ const SECTIONS = {
     title: "Scholarship Opportunities",
     blurb: "Scholarships and grants for Nigerian students, with deadlines and how to apply.",
   },
-    jamb: {
+  jamb: {
     parent: "admissions",
     title: "JAMB Guide",
     blurb: "Registration steps, syllabus, subject combinations and tips for the UTME.",
@@ -152,11 +157,28 @@ const SECTIONS = {
   },
 };
 
+function loadNav() {
+  try {
+    return JSON.parse(sessionStorage.getItem(NAV_KEY) || "{}") || {};
+  } catch {
+    return {};
+  }
+}
+
 function getArticleLevel(article = {}) {
   const [level] = (article.description || "").split(" - ");
   const match = (level || "").trim().match(/^(JSS|SS)\s*([123])$/i);
   return match ? `${match[1].toUpperCase()} ${match[2]}` : "General";
 }
+
+function getArticleTerm(article = {}) {
+  const text = `${article.title || ""} ${article.description || ""}`.toLowerCase();
+  if (/(first|1st)[\s_-]*term/.test(text)) return "FIRST TERM";
+  if (/(second|2nd)[\s_-]*term/.test(text)) return "SECOND TERM";
+  if (/(third|3rd)[\s_-]*term/.test(text)) return "THIRD TERM";
+  return "General";
+}
+
 function getArticleSubject(article = {}) {
   const parts = (article.description || "").split(" - ").map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) return "General";
@@ -185,6 +207,7 @@ function getSubjectWeekRange(items = []) {
   const max = Math.max(...weeks);
   return min === max ? `Week ${min}` : `Weeks ${min}–${max}`;
 }
+
 function tokenExpired(token) {
   try {
     const { exp } = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
@@ -236,18 +259,23 @@ async function getViewUrl(articleId) {
 
 function App() {
   const [articles, setArticles] = useState([]);
-  const [news, setNews] = useState([]);  const [user, setUser] = useState(() => {
+  const [news, setNews] = useState([]);
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem("article_token");
     if (token && tokenExpired(token)) {
       localStorage.removeItem("article_token");
       localStorage.removeItem("article_user");
       return null;
     }
-    return JSON.parse(localStorage.getItem("article_user") || "null");
+    try {
+      return JSON.parse(localStorage.getItem("article_user") || "null");
+    } catch {
+      return null;
+    }
   });
-   const saved = loadNav();
- const restorable = user ? saved.view : ["section", "news"].includes(saved.view) ? saved.view : null;
-const [view, setView] = useState(restorable || "catalog");
+  const saved = loadNav();
+  const restorable = user ? saved.view : ["section", "news"].includes(saved.view) ? saved.view : null;
+  const [view, setView] = useState(restorable || "catalog");
   const [section, setSection] = useState(saved.section || null);
   const [selected, setSelected] = useState(null);
   const [selectedId, setSelectedId] = useState(saved.selectedId || null);
@@ -257,28 +285,28 @@ const [view, setView] = useState(restorable || "catalog");
   const [selectedLevel, setSelectedLevel] = useState(saved.level || "ALL CLASSES");
   const [notice, setNotice] = useState("");
   const [showReturnToTop, setShowReturnToTop] = useState(false);
-    const [busyCount, setBusyCount] = useState(0);
+  const [busyCount, setBusyCount] = useState(0);
   const [loadingLevel, setLoadingLevel] = useState(0);
   const [articlesLoading, setArticlesLoading] = useState(false);
   const [newsLoading, setNewsLoading] = useState(false);
   const [purchasesLoading, setPurchasesLoading] = useState(false);
   const [manualFor, setManualFor] = useState(null);
   const [selectedTerm, setSelectedTerm] = useState(saved.term || "ALL TERMS");
-    const [openMenu, setOpenMenu] = useState(null);
+  const [openMenu, setOpenMenu] = useState(null);
   const [menuX, setMenuX] = useState(0);
   const [collectionParent, setCollectionParent] = useState("teachers");
+  const isBusy = busyCount > 0;
 
-    useEffect(() => {
-    if (user) {
-      setArticlesLoading(true);
-      api("/articles")
-        .then(setArticles)
-        .catch((error) => setNotice(error.message))
-        .finally(() => setArticlesLoading(false));
-    }
-    if (new URLSearchParams(window.location.search).has("reference")) setView("callback");
+  useEffect(() => {
+    if (!user) return;
+    setArticlesLoading(true);
+    api("/articles")
+      .then(setArticles)
+      .catch((error) => setNotice(error.message))
+      .finally(() => setArticlesLoading(false));
   }, [user]);
-    useEffect(() => {
+
+  useEffect(() => {
     const onExpired = () => {
       setUser(null);
       setPurchases([]);
@@ -290,13 +318,14 @@ const [view, setView] = useState(restorable || "catalog");
     window.addEventListener("session-expired", onExpired);
     return () => window.removeEventListener("session-expired", onExpired);
   }, []);
-    useEffect(() => {
+
+  useEffect(() => {
     loadingListeners.add(setBusyCount);
     return () => loadingListeners.delete(setBusyCount);
   }, []);
 
   useEffect(() => {
-    if (!busyCount) {
+    if (!isBusy) {
       setLoadingLevel(0);
       return;
     }
@@ -306,8 +335,9 @@ const [view, setView] = useState(restorable || "catalog");
       clearTimeout(showBar);
       clearTimeout(showMessage);
     };
-  }, [busyCount > 0]);
-   useEffect(() => {
+  }, [isBusy]);
+
+  useEffect(() => {
     if (view !== "news") return;
     setNewsLoading(true);
     api("/news")
@@ -315,7 +345,8 @@ const [view, setView] = useState(restorable || "catalog");
       .catch((error) => setNotice(error.message))
       .finally(() => setNewsLoading(false));
   }, [view]);
-    useEffect(() => {
+
+  useEffect(() => {
     if (!openMenu) return;
     const close = () => setOpenMenu(null);
     const onKey = (event) => event.key === "Escape" && close();
@@ -326,7 +357,8 @@ const [view, setView] = useState(restorable || "catalog");
       document.removeEventListener("keydown", onKey);
     };
   }, [openMenu]);
-   useEffect(() => {
+
+  useEffect(() => {
     if (!user) return;
     setPurchasesLoading(true);
     api("/purchases")
@@ -363,16 +395,18 @@ const [view, setView] = useState(restorable || "catalog");
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   const filteredArticles = articles
-  .filter((article) =>
-    `${article.title} ${article.description || ""}`.toLowerCase().includes(search.toLowerCase()),
-  )
-  .filter((article) => selectedTerm === "ALL TERMS" || getArticleTerm(article) === selectedTerm);
-  
+    .filter((article) =>
+      `${article.title} ${article.description || ""}`.toLowerCase().includes(search.toLowerCase()),
+    )
+    .filter((article) => selectedTerm === "ALL TERMS" || getArticleTerm(article) === selectedTerm);
+
   const visibleArticles =
     selectedLevel === "ALL CLASSES"
       ? filteredArticles
       : filteredArticles.filter((article) => getArticleLevel(article) === selectedLevel);
+
   const classGroups = LEVELS.filter((level) => level !== "ALL CLASSES")
     .map((level) => {
       const items = (selectedLevel === "ALL CLASSES" ? filteredArticles : visibleArticles).filter(
@@ -392,14 +426,17 @@ const [view, setView] = useState(restorable || "catalog");
       return { level, total: items.length, subjectGroups };
     })
     .filter((group) => group.total > 0);
+
   const groupedDisplay =
     selectedLevel === "ALL CLASSES" ? classGroups : classGroups.filter((group) => group.level === selectedLevel);
+
   const owned = (id) => purchases.some((purchase) => String(purchase.article_id) === String(id));
 
   const goCatalog = () => {
     setView("catalog");
     setSelected(null);
   };
+
   const browseCollection = (level = "ALL CLASSES") => {
     if (!user) return setModal("login");
     setSelected(null);
@@ -408,7 +445,7 @@ const [view, setView] = useState(restorable || "catalog");
   };
 
   // Single entry point for every nav link
-    function navigate(key, options = {}) {
+  function navigate(key, options = {}) {
     setSelected(null);
     window.scrollTo({ top: 0 });
     if (key === "about") return window.open("/About_Us.pdf", "_blank", "noopener");
@@ -421,6 +458,7 @@ const [view, setView] = useState(restorable || "catalog");
       setView("section");
     }
   }
+
   function toggleMenu(event, key) {
     event.stopPropagation();
     if (openMenu === key) return setOpenMenu(null);
@@ -451,12 +489,14 @@ const [view, setView] = useState(restorable || "catalog");
             : view === "library"
               ? "library"
               : null;
+
   function saveSession(data) {
     localStorage.setItem("article_token", data.token);
     localStorage.setItem("article_user", JSON.stringify(data.user));
     setUser(data.user);
     setModal(null);
   }
+
   async function authenticate(form, mode) {
     try {
       saveSession(await api(`/auth/${mode}`, { method: "POST", body: JSON.stringify(form) }));
@@ -481,7 +521,7 @@ const [view, setView] = useState(restorable || "catalog");
 
   return (
     <div className="app-shell">
-           <header className="topbar">
+      <header className="topbar">
         <button className="brand" onClick={goCatalog}>
           <span className="brand-mark">B</span>
           <span>
@@ -512,25 +552,31 @@ const [view, setView] = useState(restorable || "catalog");
                 {item.label}
               </button>
             ),
-          )}      
+          )}
           {user && (
             <button className={view === "library" ? "active" : ""} onClick={() => navigate("library")}>
               My library
             </button>
           )}
           {user && (
-  <button
-    className={view === "requests" ? "active" : ""}
-    onClick={() => {
-      setSelected(null);
-      setView("requests");
-    }}
-  >
-    My payments
-  </button>
-)}
+            <button
+              className={view === "requests" ? "active" : ""}
+              onClick={() => {
+                setSelected(null);
+                setView("requests");
+              }}
+            >
+              My payments
+            </button>
+          )}
           {user?.role === "admin" && (
-            <button className={view === "adminpayments" ? "active" : ""} onClick={() => setView("adminpayments")}>
+            <button
+              className={view === "adminpayments" ? "active" : ""}
+              onClick={() => {
+                setSelected(null);
+                setView("adminpayments");
+              }}
+            >
               Payments
             </button>
           )}
@@ -561,18 +607,21 @@ const [view, setView] = useState(restorable || "catalog");
           </div>
         )}
       </header>
+
       {notice && (
         <div className="notice">
           {notice}
           <button onClick={() => setNotice("")}>×</button>
         </div>
       )}
-            {loadingLevel >= 1 && <div className="loading-bar" role="progressbar" aria-label="Loading" />}
+
+      {loadingLevel >= 1 && <div className="loading-bar" role="progressbar" aria-label="Loading" />}
       {loadingLevel >= 2 && (
         <div className="loading-toast" role="status">
           Still working... The server may be waking up, which can take up to a minute on the first visit.
         </div>
       )}
+
       {view === "catalog" && !selected && (
         <main>
           <section className="hero">
@@ -606,7 +655,10 @@ const [view, setView] = useState(restorable || "catalog");
       {view === "section" && section && SECTIONS[section] && (
         <SectionPage
           {...SECTIONS[section]}
-          onBrowse={() => browseCollection()}
+          onBrowse={() => {
+            setCollectionParent(SECTIONS[section].parent || "teachers");
+            browseCollection();
+          }}
           onHome={() => navigate("home")}
         />
       )}
@@ -632,7 +684,8 @@ const [view, setView] = useState(restorable || "catalog");
               />
             </div>
           </div>
-                    <div className="class-filter" aria-label="Term filter">
+
+          <div className="class-filter" aria-label="Term filter">
             {TERMS.map((term) => (
               <button
                 key={term}
@@ -644,6 +697,7 @@ const [view, setView] = useState(restorable || "catalog");
               </button>
             ))}
           </div>
+
           <div className="class-filter" aria-label="Class filter">
             {LEVELS.map((level) => (
               <button
@@ -656,9 +710,10 @@ const [view, setView] = useState(restorable || "catalog");
               </button>
             ))}
           </div>
-               {articlesLoading ? (
+
+          {articlesLoading ? (
             <Skeletons />
-          ) : groupedDisplay.length ? ( 
+          ) : groupedDisplay.length ? (
             groupedDisplay.map((group) => (
               <div className="level-group" key={group.level} data-level={group.level}>
                 <div className="group-heading">
@@ -697,27 +752,37 @@ const [view, setView] = useState(restorable || "catalog");
           )}
         </main>
       )}
+
       {view === "collection" && selected && (
-  <ArticleDetail
-    article={selected}
-    onBack={() => setSelected(null)}
-    onManualPay={() => (user ? setManualFor(selected) : setModal("login"))}
-    onDownload={() => downloadFile(selected.id).catch((error) => setNotice(error.message))}
-    onRead={getViewUrl}
-    owned={owned(selected.id)}
-  />
-)}
+        <ArticleDetail
+          article={selected}
+          onBack={() => setSelected(null)}
+          onManualPay={() => (user ? setManualFor(selected) : setModal("login"))}
+          onDownload={() => downloadFile(selected.id).catch((error) => setNotice(error.message))}
+          onRead={getViewUrl}
+          owned={owned(selected.id)}
+        />
+      )}
+
       {view === "library" && (
-              <Library
+        <Library
           purchases={purchases}
           loading={purchasesLoading}
           onDownload={(id) => downloadFile(id).catch((error) => setNotice(error.message))}
         />
       )}
+
       {view === "adminpayments" && user?.role === "admin" && <AdminPayments setNotice={setNotice} />}
-       {view === "requests" && user && <MyRequests articles={articles} setNotice={setNotice} />}
+      {view === "requests" && user && <MyRequests articles={articles} setNotice={setNotice} />}
+
       {view === "news" && (
-      <News items={news} loading={newsLoading} isAdmin={user?.role === "admin"} onChange={setNews} setNotice={setNotice} />
+        <News
+          items={news}
+          loading={newsLoading}
+          isAdmin={user?.role === "admin"}
+          onChange={setNews}
+          setNotice={setNotice}
+        />
       )}
 
       <footer>
@@ -731,6 +796,7 @@ const [view, setView] = useState(restorable || "catalog");
         </div>
         <span>Think clearly. Learn deeply.</span>
       </footer>
+
       {showReturnToTop && (
         <button
           className="return-to-top"
@@ -741,25 +807,39 @@ const [view, setView] = useState(restorable || "catalog");
           ↑ <span>Return to top</span>
         </button>
       )}
-   {manualFor && (
-  <ManualPayModal
-    article={manualFor}
-    onClose={() => setManualFor(null)}
-    onDone={() => {
-      setManualFor(null);
-      setSelected(null);
-      setView("requests");
-      setNotice("Proof received. We'll unlock it in My library once your payment is confirmed.");
-      window.scrollTo({ top: 0 });
-    }}
-    setNotice={setNotice}
-  />
-)}
+
+      {manualFor && (
+        <ManualPayModal
+          article={manualFor}
+          onClose={() => setManualFor(null)}
+          onDone={() => {
+            setManualFor(null);
+            setSelected(null);
+            setView("requests");
+            setNotice("Proof received. We'll unlock it in My library once your payment is confirmed.");
+            window.scrollTo({ top: 0 });
+          }}
+          setNotice={setNotice}
+        />
+      )}
+
       {modal && (
-     function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
+        <AuthModal
+          mode={modal}
+          onClose={() => setModal(null)}
+          onSubmit={authenticate}
+          onSwitch={() => setModal(modal === "login" ? "signup" : "login")}
+        />
+      )}
+    </div>
+  );
+}
+
+function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [busy, setBusy] = useState(false);
   const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <form
@@ -804,7 +884,6 @@ const [view, setView] = useState(restorable || "catalog");
     </div>
   );
 }
-const BANK = { bank: "Opay", name: "Nwaokeafor Chukwuebuka Goodluck", number: "9022019744" };
 
 function ManualPayModal({ article, onClose, onDone, setNotice }) {
   const [file, setFile] = useState(null);
@@ -828,7 +907,7 @@ function ManualPayModal({ article, onClose, onDone, setNotice }) {
     }
   }
 
-     return (
+  return (
     <div className="modal-backdrop" onClick={done ? onDone : onClose}>
       <form className="auth-modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
         <button type="button" className="close" onClick={done ? onDone : onClose}>
@@ -839,15 +918,23 @@ function ManualPayModal({ article, onClose, onDone, setNotice }) {
           <>
             <h2>Proof received.</h2>
             <p>We'll confirm your payment and unlock "{article.title}" in My library. This can take a few hours.</p>
-                   <button className="button button-dark" disabled={busy}>
-          {busy ? "Please wait..." : `${mode === "login" ? "Sign in" : "Create account"} ↗`}
-        </button>
+            <button type="button" className="button button-dark" onClick={onDone}>
+              Done ↗
+            </button>
           </>
         ) : (
           <>
             <h2>{article.title}</h2>
-            <p>Transfer exactly <strong>{money(article.price_kobo)}</strong> to:</p>
-            <p><strong>{BANK.bank}</strong><br />{BANK.name}<br />{BANK.number}</p>
+            <p>
+              Transfer exactly <strong>{money(article.price_kobo)}</strong> to:
+            </p>
+            <p>
+              <strong>{BANK.bank}</strong>
+              <br />
+              {BANK.name}
+              <br />
+              {BANK.number}
+            </p>
             <p>In the transfer narration, write the email you signed up with.</p>
             <label>
               Upload proof of payment (JPG, PNG or PDF, max 5 MB)
@@ -870,6 +957,7 @@ function ManualPayModal({ article, onClose, onDone, setNotice }) {
     </div>
   );
 }
+
 function MyRequests({ articles, setNotice }) {
   const [rows, setRows] = useState(null);
 
@@ -889,7 +977,13 @@ function MyRequests({ articles, setNotice }) {
     rejected: "Rejected",
   };
   const when = (d) =>
-    new Date(d).toLocaleString("en-NG", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+    new Date(d).toLocaleString("en-NG", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
 
   return (
     <main className="library">
@@ -922,6 +1016,7 @@ function MyRequests({ articles, setNotice }) {
     </main>
   );
 }
+
 function AdminPayments({ setNotice }) {
   const [rows, setRows] = useState([]);
   const [busyId, setBusyId] = useState(null);
@@ -988,6 +1083,7 @@ function AdminPayments({ setNotice }) {
     </main>
   );
 }
+
 function Skeletons({ count = 6 }) {
   return (
     <div className="skeleton-grid" aria-busy="true" aria-label="Loading">
@@ -1024,6 +1120,7 @@ function SectionPage({ title, blurb, cta, onBrowse, onHome }) {
 }
 
 function ArticleCard({ article, index, onOpen }) {
+  const term = getArticleTerm(article);
   return (
     <button className={`article-card card-${index % 4}`} onClick={onOpen}>
       <div className="card-art">
@@ -1033,9 +1130,9 @@ function ArticleCard({ article, index, onOpen }) {
       <div className="card-content">
         <div>
           <p className="card-kicker">
-  {getArticleTerm(article) !== "General" && `${getArticleTerm(article)} · `}
-  {article.is_premium ? "PREMIUM NOTE" : "OPEN ACCESS"}
-</p>
+            {term !== "General" && `${term} · `}
+            {article.is_premium ? "PREMIUM NOTE" : "OPEN ACCESS"}
+          </p>
           <h3>{article.title}</h3>
         </div>
         <strong>{money(article.price_kobo)}</strong>
@@ -1086,7 +1183,7 @@ function ArticleDetail({ article, onBack, onManualPay, onDownload, onRead, owned
           <p className="preview">
             {article.preview_text || "Read, reflect, and return to the ideas that stay with you."}
           </p>
-                    {canAccess ? (
+          {canAccess ? (
             <div className="detail-actions">
               <button className="button button-accent" onClick={openReader} disabled={busy}>
                 {busy ? "Opening..." : "Read online"} <span>↗</span>
@@ -1096,7 +1193,7 @@ function ArticleDetail({ article, onBack, onManualPay, onDownload, onRead, owned
               </button>
             </div>
           ) : (
-             <button className="button button-dark" onClick={onManualPay}>
+            <button className="button button-dark" onClick={onManualPay}>
               {`Buy · ${money(article.price_kobo)} · Pay by bank transfer`} <span>↗</span>
             </button>
           )}
@@ -1135,9 +1232,9 @@ function Library({ purchases, loading, onDownload }) {
       </h1>
       <p className="subhead">The ideas you chose to keep.</p>
       <div className="library-list">
-              {loading && !purchases.length ? (
+        {loading && !purchases.length ? (
           <Skeletons count={3} />
-        ) : purchases.length ?  (
+        ) : purchases.length ? (
           purchases.map((purchase) => (
             <div className="library-item" key={purchase.id}>
               <div className="mini-art">{purchase.title?.slice(0, 1)}</div>
@@ -1156,50 +1253,6 @@ function Library({ purchases, loading, onDownload }) {
         )}
       </div>
     </main>
-  );
-}
-
-function AuthModal({ mode, onClose, onSubmit, onSwitch }) {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-    const [busy, setBusy] = useState(false);
-  const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
-  return (
-        <div className="modal-backdrop" onClick={onClose}>
-           <form
-        className="auth-modal"
-        onClick={(e) => e.stopPropagation()}
-        onSubmit={(event) => {
-          event.preventDefault();
-          onSubmit(form, mode === "login" ? "login" : "signup");
-        }}
-      >
-        <button type="button" className="close" onClick={onClose}>
-          ×
-        </button>
-        <p className="eyebrow">BINARY THINKERS</p>
-        <h2>{mode === "login" ? "Welcome back." : "Make an account."}</h2>
-        {mode === "signup" && (
-          <label>
-            Name
-            <input required value={form.name} onChange={set("name")} />
-          </label>
-        )}
-        <label>
-          Email
-          <input required type="email" value={form.email} onChange={set("email")} />
-        </label>
-        <label>
-          Password
-          <input required type="password" value={form.password} onChange={set("password")} />
-        </label>
-           <button type="button" className="button button-dark" onClick={onDone}>
-              Done ↗
-            </button>
-                <button type="button" className="text-button" onClick={onClose}>
-          Cancel
-        </button>
-      </form>
-    </div>
   );
 }
 
@@ -1366,9 +1419,9 @@ function News({ items, loading, isAdmin, onChange, setNotice }) {
           <button className="button button-dark">Publish ↗</button>
         </form>
       )}
-           {loading && !items.length ? (
+      {loading && !items.length ? (
         <Skeletons count={4} />
-      ) : items.length ?  (
+      ) : items.length ? (
         <>
           {items.slice(0, 1).map((item) => (
             <article className={`news-featured${item.image_url ? "" : " no-img"}`} key={item.id}>
