@@ -172,10 +172,15 @@ function getArticleLevel(article = {}) {
 }
 
 function getArticleTerm(article = {}) {
-  const text = `${article.title || ""} ${article.description || ""}`.toLowerCase();
-  if (/(first|1st)[\s_-]*term/.test(text)) return "FIRST TERM";
-  if (/(second|2nd)[\s_-]*term/.test(text)) return "SECOND TERM";
-  if (/(third|3rd)[\s_-]*term/.test(text)) return "THIRD TERM";
+  const text = [article.title, article.description, article.term, article.category, article.tags]
+    .flat()
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .replace(/[_\-.]+/g, " ");
+  if (/\b(first|1st|1)\s*term\b|\bterm\s*(1|one|i)\b|\bt1\b/.test(text)) return "FIRST TERM";
+  if (/\b(second|2nd|2)\s*term\b|\bterm\s*(2|two|ii)\b|\bt2\b/.test(text)) return "SECOND TERM";
+  if (/\b(third|3rd|3)\s*term\b|\bterm\s*(3|three|iii)\b|\bt3\b/.test(text)) return "THIRD TERM";
   return "General";
 }
 
