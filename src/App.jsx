@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import "./subjects.css";
 
 const FOOTER_DOCS = [
   ["About us", "/About_Us.pdf"],
@@ -296,6 +297,7 @@ function App() {
   const [selectedId, setSelectedId] = useState(saved.selectedId || null);
   const [modal, setModal] = useState(null);
   const [purchases, setPurchases] = useState([]);
+  const [approvedPayments, setApprovedPayments] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedLevel, setSelectedLevel] = useState(saved.level || "ALL CLASSES");
   const [notice, setNotice] = useState("");
@@ -373,14 +375,31 @@ function App() {
     };
   }, [openMenu]);
 
+  // Load what the person owns: server purchases plus every payment an admin has
+  // approved. Refreshed on sign-in, on every page change and when the tab regains focus,
+  // so an approval shows up in My library without signing out and in.
   useEffect(() => {
-    if (!user) return;
-    setPurchasesLoading(true);
-    api("/purchases")
-      .then(setPurchases)
-      .catch(() => {})
-      .finally(() => setPurchasesLoading(false));
-  }, [user]);
+    if (!user) {
+      setPurchases([]);
+      setApprovedPayments([]);
+      return;
+    }
+    const load = () =>
+      Promise.allSettled([api("/purchases"), api("/payments/manual/mine")]).then(([bought, paid]) => {
+        if (bought.status === "fulfilled" && Array.isArray(bought.value)) setPurchases(bought.value);
+        else if (bought.status === "rejected") console.error("Could not load purchases:", bought.reason);
+        if (paid.status === "fulfilled" && Array.isArray(paid.value))
+          setApprovedPayments(paid.value.filter((payment) => payment.status === "approved"));
+      });
+    if (["library", "requests", "collection"].includes(view)) {
+      setPurchasesLoading(true);
+      load().finally(() => setPurchasesLoading(false));
+    } else {
+      load();
+    }
+    window.addEventListener("focus", load);
+    return () => window.removeEventListener("focus", load);
+  }, [user, view]);
 
   useEffect(() => {
     try {
@@ -445,7 +464,23 @@ function App() {
   const groupedDisplay =
     selectedLevel === "ALL CLASSES" ? classGroups : classGroups.filter((group) => group.level === selectedLevel);
 
-  const owned = (id) => purchases.some((purchase) => String(purchase.article_id) === String(id));
+  // My library = server purchases + approved payments not already in that list.
+  const libraryItems = [
+    ...purchases,
+    ...approvedPayments
+      .filter((payment) => !purchases.some((p) => String(p.article_id) === String(payment.article_id)))
+      .map((payment) => {
+        const article = articles.find((a) => String(a.id) === String(payment.article_id)) || {};
+        return {
+          id: `payment-${payment.id}`,
+          article_id: payment.article_id,
+          title: article.title || payment.title || "Purchased article",
+          description: article.description || payment.description || "",
+        };
+      }),
+  ];
+
+  const owned = (id) => libraryItems.some((item) => String(item.article_id) === String(id));
 
   const goCatalog = () => {
     setView("catalog");
@@ -738,7 +773,7 @@ function App() {
                 {group.subjectGroups.map((subjectGroup) => {
                   const weekRange = getSubjectWeekRange(subjectGroup.items);
                   return (
-                    <div className="subject-group" key={`${group.level}-${subjectGroup.subject}`}>
+                    <section className="subject-group subject-panel" key={`${group.level}-${subjectGroup.subject}`}>
                       <div className="subject-heading">
                         <span>{subjectGroup.subject}</span>
                         <small>
@@ -757,7 +792,7 @@ function App() {
                           />
                         ))}
                       </div>
-                    </div>
+                    </section>
                   );
                 })}
               </div>
@@ -781,7 +816,7 @@ function App() {
 
       {view === "library" && (
         <Library
-          purchases={purchases}
+          purchases={libraryItems}
           loading={purchasesLoading}
           onDownload={(id) => downloadFile(id).catch((error) => setNotice(error.message))}
         />
