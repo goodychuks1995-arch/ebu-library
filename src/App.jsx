@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import "./subjects.css";
 
 const FOOTER_DOCS = [
   ["About us", "/About_Us.pdf"],
@@ -374,21 +373,14 @@ function App() {
     };
   }, [openMenu]);
 
-  // Refresh purchases whenever the person opens a page that depends on them,
-  // so a payment approved by an admin shows up without signing out and in.
   useEffect(() => {
     if (!user) return;
-    const load = () =>
-      api("/purchases")
-        .then(setPurchases)
-        .catch((error) => console.error("Could not load purchases:", error));
-    if (["library", "requests", "collection"].includes(view)) {
-      setPurchasesLoading(true);
-      load().finally(() => setPurchasesLoading(false));
-    }
-    window.addEventListener("focus", load);
-    return () => window.removeEventListener("focus", load);
-  }, [user, view]);
+    setPurchasesLoading(true);
+    api("/purchases")
+      .then(setPurchases)
+      .catch(() => {})
+      .finally(() => setPurchasesLoading(false));
+  }, [user]);
 
   useEffect(() => {
     try {
@@ -746,7 +738,7 @@ function App() {
                 {group.subjectGroups.map((subjectGroup) => {
                   const weekRange = getSubjectWeekRange(subjectGroup.items);
                   return (
-                    <section className="subject-group subject-panel" key={`${group.level}-${subjectGroup.subject}`}>
+                    <div className="subject-group" key={`${group.level}-${subjectGroup.subject}`}>
                       <div className="subject-heading">
                         <span>{subjectGroup.subject}</span>
                         <small>
@@ -765,7 +757,7 @@ function App() {
                           />
                         ))}
                       </div>
-                    </section>
+                    </div>
                   );
                 })}
               </div>
