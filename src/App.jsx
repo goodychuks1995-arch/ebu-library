@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import "./subjects.css";
 
 const FOOTER_DOCS = [
   ["About us", "/About_Us.pdf"],
@@ -739,7 +738,7 @@ function App() {
                 {group.subjectGroups.map((subjectGroup) => {
                   const weekRange = getSubjectWeekRange(subjectGroup.items);
                   return (
-                    <section className="subject-group subject-panel" key={`${group.level}-${subjectGroup.subject}`}>
+                    <div className="subject-group" key={`${group.level}-${subjectGroup.subject}`}>
                       <div className="subject-heading">
                         <span>{subjectGroup.subject}</span>
                         <small>
@@ -758,7 +757,7 @@ function App() {
                           />
                         ))}
                       </div>
-                    </section>
+                    </div>
                   );
                 })}
               </div>
